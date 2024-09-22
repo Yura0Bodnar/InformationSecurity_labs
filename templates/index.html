@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторні роботи з захисту інформації</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background">
+        <!-- Верхнє меню з лабораторними роботами -->
+        <div class="top-menu">
+            <ul>
+                <li><button onclick="showLab('lab1')">Лабораторна робота 1</button></li>
+                <li><button onclick="showLab('lab2')">Лабораторна робота 2</button></li>
+                <li><button onclick="showLab('lab3')">Лабораторна робота 3</button></li>
+                <li><button onclick="showLab('lab4')">Лабораторна робота 4</button></li>
+                <li><button onclick="showLab('lab5')">Лабораторна робота 5</button></li>
+            </ul>
+        </div>
+
+        <!-- Контент для кожної лабораторної роботи -->
+        <div class="content">
+            <div id="lab1" class="lab-content" style="display:none;">
+                <h2>Лабораторна робота 1</h2>
+                <form method="POST" action="/lab1">
+                    <label for="inputLab1">Введіть дані:</label>
+                    <input type="text" id="inputLab1" name="inputLab1">
+                    <button type="submit">Відправити</button>
+                </form>
+                <div>
+                    <h3>Результат:</h3>
+                    <p>{{ outputLab1 }}</p>
+                </div>
+            </div>
+
+            <!-- Додай подібні блоки для інших лабораторних робіт -->
+            <div id="lab2" class="lab-content" style="display:none;">
+                <h2>Лабораторна робота 2</h2>
+            </div>
+            <div id="lab3" class="lab-content" style="display:none;">
+                <h2>Лабораторна робота 3</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLab(labId) {
+            // Спочатку приховуємо всі лабораторні
+            const labs = document.querySelectorAll('.lab-content');
+            labs.forEach(lab => lab.style.display = 'none');
+
+            // Показуємо вибрану лабораторну роботу
+            document.getElementById(labId).style.display = 'block';
+        }
+    </script>
+</body>
+</html>

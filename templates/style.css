@@ -1,0 +1,70 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.background {
+    position: absolute;
+    background-image: url('images/images.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    height: 100%;
+    width: 100%;
+}
+
+/* Стилі для верхнього меню */
+.top-menu {
+    width: 100%;
+    background-color: #333;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.top-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-around; /* Вирівнювання кнопок по всій ширині */
+}
+
+.top-menu ul li {
+    margin: 0;
+}
+
+.top-menu ul li button {
+    padding: 15px 20px;
+    background-color: #ff6600;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.top-menu ul li button:hover {
+    background-color: #cc5505;
+}
+
+/* Стилі для контенту */
+.content {
+    flex-grow: 1;
+    padding: 80px 20px; /* Додаємо відступ зверху для кнопок */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lab-content {
+    display: none;
+    width: 500px;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgb(255, 255, 255);
+}
