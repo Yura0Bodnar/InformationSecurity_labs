@@ -1,21 +1,31 @@
 body {
     margin: 0;
     padding: 0;
+    min-height: 100vh;
 }
 
 .background {
-    position: absolute;
+    position: relative;
     background-image: url('images/images.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     font-family: Arial, sans-serif;
     color: #fff;
-    height: 100%;
-    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Стилі для верхнього меню */
+.content {
+    flex-grow: 1;
+    padding: 80px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+}
+
 .top-menu {
     width: 100%;
     background-color: #333;
@@ -31,7 +41,7 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
-    justify-content: space-around; /* Вирівнювання кнопок по всій ширині */
+    justify-content: space-around;
 }
 
 .top-menu ul li {
@@ -51,15 +61,6 @@ body {
     background-color: #cc5505;
 }
 
-/* Стилі для контенту */
-.content {
-    flex-grow: 1;
-    padding: 80px 20px; /* Додаємо відступ зверху для кнопок */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .lab-content {
     display: none;
     width: 500px;
@@ -67,4 +68,8 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);
+}
+
+.lab-content.active {
+    display: block;
 }

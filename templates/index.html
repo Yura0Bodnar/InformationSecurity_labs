@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лабораторні роботи з захисту інформації</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
     <div class="background">
-        <!-- Верхнє меню з лабораторними роботами -->
         <div class="top-menu">
             <ul>
                 <li><button onclick="showLab('lab1')">Лабораторна робота 1</button></li>
@@ -18,14 +17,14 @@
                 <li><button onclick="showLab('lab5')">Лабораторна робота 5</button></li>
             </ul>
         </div>
-
-        <!-- Контент для кожної лабораторної роботи -->
         <div class="content">
-            <div id="lab1" class="lab-content" style="display:none;">
+            <div id="lab1" class="lab-content {% if active_lab == 'lab1' %}active{% endif %}">
                 <h2>Лабораторна робота 1</h2>
+                <h3>Завдання 1:</h3>
+                <p>Варіант 4 (параметри є в конфігураційному файлі)</p>
                 <form method="POST" action="/lab1">
-                    <label for="inputLab1">Введіть дані:</label>
-                    <input type="text" id="inputLab1" name="inputLab1">
+                    <label for="inputLab1">Введіть n:</label>
+                    <input type="number" id="inputLab1" name="inputLab1" required>
                     <button type="submit">Відправити</button>
                 </form>
                 <div>
@@ -33,26 +32,34 @@
                     <p>{{ outputLab1 }}</p>
                 </div>
             </div>
-
-            <!-- Додай подібні блоки для інших лабораторних робіт -->
-            <div id="lab2" class="lab-content" style="display:none;">
-                <h2>Лабораторна робота 2</h2>
-            </div>
-            <div id="lab3" class="lab-content" style="display:none;">
-                <h2>Лабораторна робота 3</h2>
-            </div>
         </div>
     </div>
 
-    <script>
-        function showLab(labId) {
-            // Спочатку приховуємо всі лабораторні
-            const labs = document.querySelectorAll('.lab-content');
-            labs.forEach(lab => lab.style.display = 'none');
-
-            // Показуємо вибрану лабораторну роботу
-            document.getElementById(labId).style.display = 'block';
+<script>
+    // Зчитування активного лабораторного вікна з локального сховища
+    function loadActiveLab() {
+        const activeLab = localStorage.getItem('activeLab');
+        if (activeLab) {
+            showLab(activeLab);
         }
-    </script>
+    }
+
+    // Функція для відображення вибраної лабораторної роботи
+    function showLab(labId) {
+        // Спочатку приховуємо всі лабораторні
+        const labs = document.querySelectorAll('.lab-content');
+        labs.forEach(lab => lab.classList.remove('active'));
+
+        // Показуємо вибрану лабораторну роботу
+        const selectedLab = document.getElementById(labId);
+        selectedLab.classList.add('active');
+
+        // Зберігаємо активне лабораторне вікно в локальному сховищі
+        localStorage.setItem('activeLab', labId);
+    }
+
+    // Завантажуємо активне лабораторне вікно при завантаженні сторінки
+    window.onload = loadActiveLab;
+</script>
 </body>
 </html>

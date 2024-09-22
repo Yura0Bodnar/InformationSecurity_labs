@@ -1,8 +1,17 @@
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import configparser
+
+app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 def linear_congruential_generator(m, a, c, x0, n):
-    """Функція для генерації псевдовипадкових чисел."""
     sequence = []
     x = x0
     for _ in range(n):
@@ -11,49 +20,40 @@ def linear_congruential_generator(m, a, c, x0, n):
     return sequence
 
 
-def save_to_file(sequence, filename="random_numbers.txt"):
-    """Функція для збереження послідовності у файл."""
-    with open(filename, "w") as file:
-        for number in sequence:
-            file.write(f"{number}\n")
+@app.get("/", response_class=HTMLResponse)
+async def read_lab(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
-def main():
-    # Створення об'єкта ConfigParser
+@app.get("/", response_class=HTMLResponse)
+async def read_lab(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.post("/lab1", response_class=HTMLResponse)
+async def lab1(request: Request, inputLab1: int = Form(...)):
     config = configparser.ConfigParser()
-
-    # Зчитування конфігураційного файлу
     config.read("config.ini")
-
-    # Отримання змінних з файлу конфігурації
     m = int(config["LCG"]["m"])
     a = int(config["LCG"]["a"])
     c = int(config["LCG"]["c"])
     x0 = int(config["LCG"]["x0"])
 
-    while True:
-        try:
-            n = int(input("Введіть кількість псевдовипадкових чисел для генерації: "))
-            if n > 1500000:
-                print("Надто велике число, введіть менше n: ")
-            elif n <= 0:
-                print("Число має бути більше нуля. Введіть інше значення.")
-            else:
-                break
-        except ValueError:
-            print("Помилка: n має бути цілим числом. Спробуйте ще раз.")
+    try:
+        if inputLab1 > 1500000:
+            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Надто велике число, введіть менше n."})
+        elif inputLab1 <= 0:
+            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Число має бути більше нуля. Введіть інше значення."})
 
-    # Генерація послідовності
-    sequence = linear_congruential_generator(m, a, c, x0, n)
+        sequence = linear_congruential_generator(m, a, c, x0, inputLab1)
+        result = " ".join(map(str, sequence))
+        return templates.TemplateResponse("index.html", {"request": request, "outputLab1": result})
 
-    # Виведення результатів на екран
-    print("Згенерована послідовність:")
-    for number in sequence:
-        print(number)
-
-    # Збереження у файл
-    save_to_file(sequence)
+    except ValueError:
+        return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
 
 
 if __name__ == "__main__":
-    main()
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+    
