@@ -28,9 +28,15 @@
                     <button type="submit">Відправити</button>
                 </form>
                 <div>
-                    <h3>Результат:</h3>
-                    <p>{{ outputLab1 }}</p>
-                </div>
+    <h3>Період:</h3>
+    <p>{{ outputLab1_2 if outputLab1_2 else 'Період не знайдено' }}</p>
+    <h3>Результат:</h3>
+    <p>{{ outputLab1 if outputLab1 else 'Немає результату' }}</p>
+</div>
+<div>
+    <h3>Завдання 2: Оцінка числа π за допомогою теореми Чезаро</h3>
+    <p>{{ outputLab1_3 if outputLab1_3 else 'Оцінка не проведена' }}</p>
+</div>
             </div>
         </div>
     </div>
