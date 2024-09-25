@@ -55,15 +55,15 @@ def find_period(sequence):
 
 
 def save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi, filename="results.txt"):
-    with open(filename, "w") as file:
-        file.write("Згенерована послідовність чисел:\n")
-        file.write(sequence_result + "\n\n")
-        file.write("Оцінка числа π з використанням ЛКГ:\n")
-        file.write(pi_lcg_result + "\n\n")
-        file.write("Оцінка числа π з використанням системного генератора:\n")
-        file.write(pi_random_result + "\n\n")
-        file.write("Відоме значення числа π:\n")
-        file.write(known_pi + "\n")
+    try:
+        with open(filename, "w") as file:
+            file.write("The generated sequence of numbers:\n")
+            file.write(sequence_result + "\n\n")
+            file.write(str(pi_lcg_result) + "\n\n")
+            file.write(str(pi_random_result) + "\n\n")
+            file.write(str(known_pi) + "\n")
+    except Exception as e:
+        print(f"Error saving results: {e}")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -97,13 +97,13 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
         period = find_period(sequence)
 
         estimated_pi_lcg = cesaro_test(sequence)
-        pi_lcg_result = f"Оцінка числа π з використанням ЛКГ: {estimated_pi_lcg}"
+        pi_lcg_result = f"Estimation of the Pi number using LCG: {estimated_pi_lcg}"
 
         random_sequence = [random.randint(1, m) for _ in range(inputLab1)]
         estimated_pi_random = cesaro_test(random_sequence)
-        pi_random_result = f"Оцінка числа π з використанням системного генератора: {estimated_pi_random}"
+        pi_random_result = f"Estimating the number Pi using a system generator: {estimated_pi_random}"
 
-        known_pi = f"Відоме значення числа π: {math.pi}"
+        known_pi = f"The value of Pi is known: {math.pi}"
 
         save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi)
 
