@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import configparser
 import math
 import random
+from concurrent.futures import ProcessPoolExecutor
 
 app = FastAPI()
 
@@ -23,29 +24,38 @@ def linear_congruential_generator(m, a, c, x0, n):
 
 
 def gcd(a, b):
-    """Функція для обчислення найбільшого спільного дільника (НСД) за допомогою алгоритму Евкліда."""
     while b != 0:
         a, b = b, a % b
     return a
 
 
-def cesaro_test(sequence):
-    """Функція для тестування генератора на основі теореми Чезаро і визначення значення π."""
+def cesaro_test_part(sequence_part):
+    coprime_count = 0
+    total_pairs = 0
+    for i in range(len(sequence_part)):
+        for j in range(i + 1, len(sequence_part)):
+            total_pairs += 1
+            if gcd(sequence_part[i], sequence_part[j]) == 1:
+                coprime_count += 1
+    return coprime_count, total_pairs
+
+
+def cesaro_test_parallel(sequence, num_workers=4):
+    chunk_size = len(sequence) // num_workers
+    chunks = [sequence[i:i + chunk_size] for i in range(0, len(sequence), chunk_size)]
+
     coprime_count = 0
     total_pairs = 0
 
-    # Проходимо по всіх парах чисел у послідовності
-    for i in range(len(sequence)):
-        for j in range(i + 1, len(sequence)):
-            total_pairs += 1
-            if gcd(sequence[i], sequence[j]) == 1:
-                coprime_count += 1
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        results = executor.map(cesaro_test_part, chunks)
 
-    # Ймовірність того, що два випадкові числа є взаємно простими
-    probability = coprime_count / total_pairs
+    for count, pairs in results:
+        coprime_count += count
+        total_pairs += pairs
 
-    # Оцінка числа π за формулою теореми Чезаро
-    estimated_pi = math.sqrt(6 / probability)
+    probability = coprime_count / total_pairs if total_pairs > 0 else 0
+    estimated_pi = math.sqrt(6 / probability) if probability > 0 else 0
 
     return estimated_pi
 
@@ -60,16 +70,15 @@ def find_period(sequence):
 
 
 def save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi, filename="results.txt"):
-    """Функція для збереження результатів у файл."""
-    with open(filename, "w") as file:
-        file.write("Згенерована послідовність чисел:\n")
-        file.write(sequence_result + "\n\n")
-        file.write("Оцінка числа π з використанням ЛКГ:\n")
-        file.write(pi_lcg_result + "\n\n")
-        file.write("Оцінка числа π з використанням системного генератора:\n")
-        file.write(pi_random_result + "\n\n")
-        file.write("Відоме значення числа π:\n")
-        file.write(known_pi + "\n")
+    try:
+        with open(filename, "w") as file:
+            file.write("The generated sequence of numbers:\n")
+            file.write(sequence_result + "\n\n")
+            file.write(str(pi_lcg_result) + "\n\n")
+            file.write(str(pi_random_result) + "\n\n")
+            file.write(str(known_pi) + "\n")
+    except Exception as e:
+        print(f"Error saving results: {e}")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -93,46 +102,43 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
 
     try:
         if inputLab1 > 1500000:
-            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Надто велике число, введіть менше n."})
+            return templates.TemplateResponse("index.html", {"request": request,
+                                                             "outputLab1": "Надто велике число, введіть менше n."})
         elif inputLab1 <= 0:
-            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Число має бути більше нуля. Введіть інше значення."})
+            return templates.TemplateResponse("index.html", {"request": request,
+                                                             "outputLab1": "Число має бути більше нуля. Введіть інше значення."})
 
-        # Генерація послідовності псевдовипадкових чисел
         sequence = linear_congruential_generator(m, a, c, x0, inputLab1)
         sequence_result = " ".join(map(str, sequence))
 
-        # Знаходження періоду послідовності
         period = find_period(sequence)
 
-        # Оцінка числа π з використанням теореми Чезаро (ЛКГ)
-        estimated_pi_lcg = cesaro_test(sequence)
-        pi_lcg_result = f"Оцінка числа π з використанням ЛКГ: {estimated_pi_lcg}"
+        estimated_pi_lcg = cesaro_test_parallel(sequence)
+        pi_lcg_result = f"Estimation of the Pi number using LCG: {estimated_pi_lcg}"
 
-        # Тестування генератора з системної бібліотеки random
         random_sequence = [random.randint(1, m) for _ in range(inputLab1)]
-        estimated_pi_random = cesaro_test(random_sequence)
-        pi_random_result = f"Оцінка числа π з використанням системного генератора: {estimated_pi_random}"
+        estimated_pi_random = cesaro_test_parallel(random_sequence)
+        pi_random_result = f"Estimating the number Pi using a system generator: {estimated_pi_random}"
 
-        # Порівняння з реальним значенням π
-        known_pi = f"Відоме значення числа π: {math.pi}"
+        known_pi = f"The value of Pi is known: {math.pi}"
 
-        # Зберігаємо результати у файл
         save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi)
-
-        # Об'єднуємо результати для відображення
-        combined_result = f"{pi_lcg_result}<br>{pi_random_result}<br>{known_pi}"
 
         return templates.TemplateResponse("index.html", {
             "request": request,
-            "outputLab1": sequence_result,  # Згенерована послідовність
-            "outputLab1_2": period,  # Період послідовності
-            "outputLab1_3": combined_result  # Результати оцінки числа π
+            "outputLab1": sequence_result,
+            "outputLab1_2": period,
+            "chesaro": estimated_pi_lcg,
+            "random_sequence": estimated_pi_random,
+            "pi": known_pi
         })
 
     except ValueError:
-        return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
+        return templates.TemplateResponse("index.html", {"request": request,
+                                                         "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    
