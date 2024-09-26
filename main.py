@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import configparser
 import math
 import random
+from concurrent.futures import ProcessPoolExecutor
 
 app = FastAPI()
 
@@ -28,19 +29,33 @@ def gcd(a, b):
     return a
 
 
-def cesaro_test(sequence):
+def cesaro_test_part(sequence_part):
+    coprime_count = 0
+    total_pairs = 0
+    for i in range(len(sequence_part)):
+        for j in range(i + 1, len(sequence_part)):
+            total_pairs += 1
+            if gcd(sequence_part[i], sequence_part[j]) == 1:
+                coprime_count += 1
+    return coprime_count, total_pairs
+
+
+def cesaro_test_parallel(sequence, num_workers=4):
+    chunk_size = len(sequence) // num_workers
+    chunks = [sequence[i:i + chunk_size] for i in range(0, len(sequence), chunk_size)]
+
     coprime_count = 0
     total_pairs = 0
 
-    for i in range(len(sequence)):
-        for j in range(i + 1, len(sequence)):
-            total_pairs += 1
-            if gcd(sequence[i], sequence[j]) == 1:
-                coprime_count += 1
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        results = executor.map(cesaro_test_part, chunks)
 
-    probability = coprime_count / total_pairs
+    for count, pairs in results:
+        coprime_count += count
+        total_pairs += pairs
 
-    estimated_pi = math.sqrt(6 / probability)
+    probability = coprime_count / total_pairs if total_pairs > 0 else 0
+    estimated_pi = math.sqrt(6 / probability) if probability > 0 else 0
 
     return estimated_pi
 
@@ -87,20 +102,22 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
 
     try:
         if inputLab1 > 1500000:
-            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Надто велике число, введіть менше n."})
+            return templates.TemplateResponse("index.html", {"request": request,
+                                                             "outputLab1": "Надто велике число, введіть менше n."})
         elif inputLab1 <= 0:
-            return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Число має бути більше нуля. Введіть інше значення."})
+            return templates.TemplateResponse("index.html", {"request": request,
+                                                             "outputLab1": "Число має бути більше нуля. Введіть інше значення."})
 
         sequence = linear_congruential_generator(m, a, c, x0, inputLab1)
         sequence_result = " ".join(map(str, sequence))
 
         period = find_period(sequence)
 
-        estimated_pi_lcg = cesaro_test(sequence)
+        estimated_pi_lcg = cesaro_test_parallel(sequence)
         pi_lcg_result = f"Estimation of the Pi number using LCG: {estimated_pi_lcg}"
 
         random_sequence = [random.randint(1, m) for _ in range(inputLab1)]
-        estimated_pi_random = cesaro_test(random_sequence)
+        estimated_pi_random = cesaro_test_parallel(random_sequence)
         pi_random_result = f"Estimating the number Pi using a system generator: {estimated_pi_random}"
 
         known_pi = f"The value of Pi is known: {math.pi}"
@@ -117,10 +134,11 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
         })
 
     except ValueError:
-        return templates.TemplateResponse("index.html", {"request": request, "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
+        return templates.TemplateResponse("index.html", {"request": request,
+                                                         "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    
