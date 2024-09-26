@@ -6,6 +6,7 @@ import configparser
 import math
 import random
 from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 
 app = FastAPI()
 
@@ -29,26 +30,49 @@ def gcd(a, b):
     return a
 
 
-def cesaro_test_part(sequence_part):
+def cesaro_test_part(sequence_part, sample_size, use_sampling):
     coprime_count = 0
     total_pairs = 0
-    for i in range(len(sequence_part)):
-        for j in range(i + 1, len(sequence_part)):
+    n = len(sequence_part)
+
+    if n < 2:
+        return 0, 0
+
+    if use_sampling:
+        for _ in range(min(sample_size, n * (n - 1) // 2)):
+            i, j = random.sample(range(n), 2)
             total_pairs += 1
             if gcd(sequence_part[i], sequence_part[j]) == 1:
                 coprime_count += 1
+    else:
+        for i in range(len(sequence_part)):
+            for j in range(i + 1, len(sequence_part)):
+                total_pairs += 1
+                if gcd(sequence_part[i], sequence_part[j]) == 1:
+                    coprime_count += 1
+
     return coprime_count, total_pairs
 
 
-def cesaro_test_parallel(sequence, num_workers=4):
-    chunk_size = len(sequence) // num_workers
-    chunks = [sequence[i:i + chunk_size] for i in range(0, len(sequence), chunk_size)]
+def cesaro_test_worker(args):
+    return cesaro_test_part(*args)
+
+
+def cesaro_test_parallel(sequence, num_workers=5, sample_size=100000):
+    n = len(sequence)
+    chunk_size = n // num_workers
+    chunks = [sequence[i:i + chunk_size] for i in range(0, n, chunk_size)]
 
     coprime_count = 0
     total_pairs = 0
 
+    use_sampling = n >= 100000
+    part_sample_size = sample_size // num_workers if use_sampling else 0
+
+    args = [(chunk, part_sample_size, use_sampling) for chunk in chunks]
+
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        results = executor.map(cesaro_test_part, chunks)
+        results = executor.map(cesaro_test_worker, args)
 
     for count, pairs in results:
         coprime_count += count
@@ -123,6 +147,9 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
         known_pi = f"The value of Pi is known: {math.pi}"
 
         save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi)
+
+        num_cores = multiprocessing.cpu_count()
+        print(f"Кількість процесорних ядер: {num_cores}")
 
         return templates.TemplateResponse("index.html", {
             "request": request,
