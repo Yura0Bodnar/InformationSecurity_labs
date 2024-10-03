@@ -27,47 +27,23 @@
                     <input type="number" id="inputLab1" name="inputLab1" required>
                     <button type="submit">Відправити</button>
                 </form>
+                <button onclick="downloadResults()">Зберегти у файл</button>
                 <div>
-    <h3>Період:</h3>
-    <p>{{ outputLab1_2 if outputLab1_2 else 'Період не знайдено' }}</p>
-    <h3>Результат:</h3>
-    <p>{{ outputLab1 if outputLab1 else 'Немає результату' }}</p>
-</div>
-<div>
-    <h3>Завдання 2: Оцінка числа π за допомогою теореми Чезаро</h3>
+                    <h3>Період:</h3>
+                    <p>{{ outputLab1_2 if outputLab1_2 else 'Період не знайдено' }}</p>
+                    <h3>Результат:</h3>
+                    <p>{{ outputLab1 if outputLab1 else 'Немає результату' }}</p>
+                </div>
+                <div>
+                    <h3>Завдання 2: Оцінка числа π за допомогою теореми Чезаро</h3>
                     <p>Оцінка числа π з використанням ЛКГ: {{ chesaro }}</p>
                     <p>Оцінка числа π з використанням системного генератора: {{ random_sequence }}</p>
                     <p>{{ pi }}</p>
-</div>
+                </div>
             </div>
         </div>
     </div>
 
-<script>
-    // Зчитування активного лабораторного вікна з локального сховища
-    function loadActiveLab() {
-        const activeLab = localStorage.getItem('activeLab');
-        if (activeLab) {
-            showLab(activeLab);
-        }
-    }
-
-    // Функція для відображення вибраної лабораторної роботи
-    function showLab(labId) {
-        // Спочатку приховуємо всі лабораторні
-        const labs = document.querySelectorAll('.lab-content');
-        labs.forEach(lab => lab.classList.remove('active'));
-
-        // Показуємо вибрану лабораторну роботу
-        const selectedLab = document.getElementById(labId);
-        selectedLab.classList.add('active');
-
-        // Зберігаємо активне лабораторне вікно в локальному сховищі
-        localStorage.setItem('activeLab', labId);
-    }
-
-    // Завантажуємо активне лабораторне вікно при завантаженні сторінки
-    window.onload = loadActiveLab;
-</script>
+    <script src="../static/script.js"></script>
 </body>
 </html>
