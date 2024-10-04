@@ -17,8 +17,10 @@
                 <li><button onclick="showLab('lab5')">Лабораторна робота 5</button></li>
             </ul>
         </div>
+
+        <!-- Лабораторна робота 1 -->
         <div class="content">
-            <div id="lab1" class="lab-content {% if active_lab == 'lab1' %}active{% endif %}">
+            <div id="lab1" class="lab-content">
                 <h2>Лабораторна робота 1</h2>
                 <h3>Завдання 1:</h3>
                 <p>Варіант 4 (параметри є в конфігураційному файлі)</p>
@@ -40,6 +42,57 @@
                     <p>Оцінка числа π з використанням системного генератора: {{ random_sequence }}</p>
                     <p>{{ pi }}</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Лабораторна робота 2 -->
+        <div class="content">
+            <div id="lab2" class="lab-content active">
+                <h2>Лабораторна робота 2: MD5 хешування</h2>
+
+                <!-- Хешування рядка -->
+                <h3>Хешування рядка:</h3>
+                <form method="POST" action="/lab2/md5_string">
+                    <label for="inputString">Введіть рядок:</label>
+                    <input type="text" id="inputString" name="input_string" required>
+                    <button type="submit">Отримати MD5</button>
+                </form>
+                {% if string_result %}
+                <div>
+                    <h4>MD5 хеш рядка:</h4>
+                    <p>{{ string_result }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Хешування файлу -->
+                <h3>Хешування файлу:</h3>
+                    <form method="POST" action="/lab2/md5_file" enctype="multipart/form-data">
+                        <label for="fileHash">Виберіть файл:</label> <!-- Змінено id -->
+                        <input type="file" id="fileHash" name="file" required>
+                        <button type="submit">Отримати MD5 хеш</button>
+                    </form>
+                {% if file_hash %}
+                <div>
+                    <h4>MD5 хеш файлу:</h4>
+                    <p>{{ file_hash }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Перевірка цілісності файлу -->
+                <h3>Перевірка цілісності файлу:</h3>
+                    <form method="POST" action="/lab2/verify_file" enctype="multipart/form-data">
+                        <label for="fileVerify">Виберіть файл для перевірки:</label> <!-- Змінено id -->
+                        <input type="file" id="fileVerify" name="file" required>
+                        <label for="hash_file">Виберіть файл із хешем:</label>
+                        <input type="file" id="hash_file" name="hash_file" required>
+                        <button type="submit">Перевірити</button>
+                    </form>
+                {% if is_intact is not none %}
+                <div>
+                    <h4>Результат перевірки:</h4>
+                    <p>{{ "Файл цілісний" if is_intact else "Файл пошкоджений" }}</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
