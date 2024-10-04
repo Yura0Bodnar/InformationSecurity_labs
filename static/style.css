@@ -1,9 +1,11 @@
+/* Основний стиль для сторінки */
 body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
 }
 
+/* Фон і структура сторінки */
 .background {
     position: relative;
     background-image: url('images/images.jpg');
@@ -15,17 +17,18 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-}дфи2 ашкіе
+}
 
+/* Стиль для контейнера контенту */
 .content {
     flex-grow: 1;
     padding: 80px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px);
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
+/* Верхнє меню */
 .top-menu {
     width: 100%;
     background-color: #333;
@@ -36,6 +39,7 @@ body {
     z-index: 10;
 }
 
+/* Стилі для меню */
 .top-menu ul {
     list-style-type: none;
     margin: 0;
@@ -61,15 +65,31 @@ body {
     background-color: #cc5505;
 }
 
+/* Стиль для блоків лабораторних робіт */
 .lab-content {
-    display: none;
+    display: none; /* Спочатку приховуємо всі лабораторні роботи */
     width: 500px;
     background-color: #333;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);
+    position: absolute; /* Фіксуємо позицію для всіх лабораторних на одному рівні */
+    top: 150px; /* Відступ від верху */
+    left: 50%; /* Центруємо по горизонталі */
+    transform: translateX(-50%); /* Центруємо елемент по горизонталі */
+    z-index: 1; /* Всі лабораторні на одному рівні по висоті */
 }
 
+/* Відображення активної лабораторної роботи */
 .lab-content.active {
-    display: block;
+    display: block; /* Показуємо активну лабораторну роботу */
+    z-index: 2; /* Активній лабораторній роботі надаємо вищий пріоритет */
+}
+
+/* Додатковий стиль для маленьких екранів */
+@media screen and (max-width: 768px) {
+    .lab-content {
+        width: 90%; /* Зменшуємо ширину на маленьких екранах */
+        top: 100px; /* Менший відступ від верху */
+    }
 }

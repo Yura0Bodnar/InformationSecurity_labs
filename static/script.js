@@ -1,19 +1,29 @@
+// Завантаження активної лабораторної роботи з localStorage
 function loadActiveLab() {
-    const activeLab = localStorage.getItem('activeLab');
-    if (activeLab) {
-        showLab(activeLab);
+    // Спробуємо завжди показувати лабораторну 2 для тестування
+    showLab('lab2');
+}
+
+// Функція для показу конкретної лабораторної роботи
+function showLab(labId) {
+    const labs = document.querySelectorAll('.lab-content');
+    labs.forEach(lab => lab.classList.remove('active')); // Прибираємо активність з усіх лабораторних
+
+    const selectedLab = document.getElementById(labId);
+
+    if (selectedLab) {
+        selectedLab.classList.add('active'); // Додаємо клас "active" до вибраної лабораторної
+        console.log(`Lab with ID ${labId} is now active.`);
+        localStorage.setItem('activeLab', labId); // Зберігаємо активну лабораторну в localStorage
+    } else {
+        console.error(`Lab with ID ${labId} not found.`);
     }
 }
 
-function showLab(labId) {
-    const labs = document.querySelectorAll('.lab-content');
-    labs.forEach(lab => lab.classList.remove('active'));
-    const selectedLab = document.getElementById(labId);
-    selectedLab.classList.add('active');
-}
-
+// Функція для завантаження результатів (для першої лабораторної роботи)
 function downloadResults() {
     window.location.href = '/download_results'; // Завантаження файлу
 }
 
+// Виклик функції для завантаження активної лабораторної роботи при завантаженні сторінки
 window.onload = loadActiveLab;
