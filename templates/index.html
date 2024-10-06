@@ -72,11 +72,18 @@
 
                 <!-- Хешування файлу -->
                 <h3>Хешування файлу:</h3>
-                <form method="POST" action="/lab2/md5_file" enctype="multipart/form-data">
+                <form method="POST" action="/lab2/process_file" enctype="multipart/form-data">
                     <label for="fileHash">Виберіть файл:</label>
                     <input type="file" id="fileHash" name="file" value="{{ file }}" required>
                     <button type="submit">Отримати MD5 хеш</button>
                 </form>
+                {% if file_content %}
+                    <h3>Вміст файлу: {{ filename }}</h3>
+                    <div style="max-height: 300px; width: 100%; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+                        <pre>{{ file_content }}</pre>
+                    </div>
+                {% endif %}
+
 
                 {% if file_hash %}
                 <div>

@@ -4,6 +4,9 @@ from fastapi.templating import Jinja2Templates
 import struct
 import math
 import os
+import json
+import pandas as pd
+from PyPDF2 import PdfReader
 
 router = APIRouter()
 
@@ -138,3 +141,67 @@ async def verify_file_integrity(computed_hash: str, hash_file: UploadFile) -> bo
     original_hash = await hash_file.read()
     # Порівнюємо обчислений хеш із хешем у файлі
     return computed_hash == original_hash.decode().strip()
+
+
+@router.post("/lab2/process_file", response_class=HTMLResponse)
+async def process_file(request: Request, file: UploadFile = File(...)):
+    filename = file.filename
+    file_extension = filename.split(".")[-1].lower()
+
+    # Хешуємо файл
+    file_hash = await md5_file(file)
+
+    # Переміщуємо вказівник файлу на початок після хешування
+    file.file.seek(0)
+
+    # Зчитуємо файл залежно від його розширення
+    if file_extension == "txt":
+        file_content = await read_txt(file)
+    elif file_extension == "pdf":
+        file_content = await read_pdf(file)
+    elif file_extension == "csv":
+        file_content = await read_csv(file)
+    elif file_extension == "json":
+        file_content = await read_json(file)
+    else:
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "error": "Unsupported file format. Please upload .txt, .pdf, .csv, or .json file."
+        })
+
+    # Повертаємо вміст файлу та його хеш для відображення
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "file_content": file_content,
+        "file_hash": file_hash,
+        "filename": filename
+    })
+
+
+async def read_txt(file: UploadFile) -> str:
+    content = await file.read()
+    return content.decode("utf-8")
+
+
+async def read_pdf(file: UploadFile) -> str:
+    reader = PdfReader(file.file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
+
+
+async def read_csv(file: UploadFile) -> str:
+    # Використовуємо pandas для читання CSV, пропускаємо перший рядок
+    df = pd.read_csv(file.file, skiprows=1, header=None)  # Пропускаємо заголовок та не використовуємо його
+    # Витягуємо перше значення першого стовпця
+    value = df.iloc[0, 0]  # Отримуємо значення в першому рядку і першому стовпці
+    return str(value)
+
+
+async def read_json(file: UploadFile) -> str:
+    content = await file.read()
+    json_data = json.loads(content.decode("utf-8"))
+    # Витягуємо значення для ключа "text"
+    value = json_data.get("text", "")
+    return str(value)
