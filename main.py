@@ -9,7 +9,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(lab1.router)
-# app.include_router(lab2.router)
+app.include_router(lab2.router)
 
 if __name__ == "__main__":
     import uvicorn

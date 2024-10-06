@@ -1,19 +1,29 @@
 from fastapi import APIRouter, File, UploadFile, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 import struct
 import math
+import os
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
 
 
+def save_results_to_file(hash_result, filename: str):
+    try:
+        # Відкриваємо файл на запис (створюється новий, якщо його не існує)
+        with open(filename, "w") as file:
+            file.write("Hash code:\n")
+            file.write(hash_result + "\n\n")
+    except Exception as e:
+        print(f"Error saving results: {e}")
+
+
 def left_rotate(x, c):
     return (x << c) & 0xFFFFFFFF | (x >> (32 - c))
 
 
-# Основний клас MD5
 class MD5:
     def __init__(self):
         self.A = 0x67452301
@@ -66,7 +76,6 @@ class MD5:
         return ''.join([struct.pack('<I', x).hex() for x in [self.A, self.B, self.C, self.D]])
 
 
-# Функція для хешування файлу
 async def md5_file(file: UploadFile) -> str:
     md5 = MD5()
     while chunk := await file.read(64):
@@ -74,22 +83,58 @@ async def md5_file(file: UploadFile) -> str:
     return md5.hexdigest()
 
 
-# Перевірка цілісності файлу
-async def verify_file_integrity(file: UploadFile, hash_file: UploadFile) -> bool:
-    computed_hash = await md5_file(file)
-    original_hash = await hash_file.read()
-    return computed_hash == original_hash.decode().strip()
+@router.post("/lab2/md5_string", response_class=HTMLResponse)
+async def hash_string(request: Request, input_string: str = Form(...)):
+    md5 = MD5()
+    md5.update(input_string.encode())
+    hash_result = md5.hexdigest()
+
+    # Використовуємо дефолтне ім'я файлу
+    filename = "result_md5.txt"
+
+    # Зберігаємо результат у файл
+    save_results_to_file(hash_result, filename)
+
+    # Показуємо результат і можливість завантаження
+    return templates.TemplateResponse("index.html",
+                                      {"request": request, "string_result": hash_result, "input_string": input_string})
 
 
-# Маршрут для хешування файлу
+@router.get("/download_results_lab2", response_class=FileResponse)
+async def download_results():
+    filename = "result_md5.txt"
+    # Перевіряємо, чи існує файл
+    if os.path.exists(filename):
+        # Повертаємо файл для завантаження
+        return FileResponse(path=filename, media_type='application/octet-stream', filename=filename)
+    return {"status": "error", "message": "Файл не знайдено."}
+
+
 @router.post("/lab2/md5_file", response_class=HTMLResponse)
 async def hash_file(request: Request, file: UploadFile = File(...)):
-    hash_result = await md5_file(file)
-    return templates.TemplateResponse("index.html", {"request": request, "file_hash": hash_result})
+    # Хешуємо файл
+    file_hash = await md5_file(file)
+
+    # Повертаємо результат хешування і відображаємо форму для перевірки
+    return templates.TemplateResponse("index.html", {"request": request, "file_hash": file_hash, "file": file})
 
 
-# Маршрут для перевірки цілісності файлу
 @router.post("/lab2/verify_file", response_class=HTMLResponse)
-async def verify_file(request: Request, file: UploadFile = File(...), hash_file: UploadFile = File(...)):
-    is_intact = await verify_file_integrity(file, hash_file)
-    return templates.TemplateResponse("index.html", {"request": request, "is_intact": is_intact})
+async def verify_file(request: Request, file_hash: str = Form(...), hash_file: UploadFile = File(...)):
+    # Перевіряємо цілісність файлу
+    is_intact = await verify_file_integrity(file_hash, hash_file)
+
+    # Повертаємо результат перевірки у шаблон з відповідним повідомленням
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "is_intact": is_intact,
+        "check_performed": True,  # Додаємо змінну, яка вказує, що перевірка була виконана
+        "file_hash": file_hash
+    })
+
+
+async def verify_file_integrity(computed_hash: str, hash_file: UploadFile) -> bool:
+    # Отримуємо хеш із завантаженого файлу з хешем
+    original_hash = await hash_file.read()
+    # Порівнюємо обчислений хеш із хешем у файлі
+    return computed_hash == original_hash.decode().strip()
