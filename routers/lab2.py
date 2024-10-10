@@ -7,6 +7,7 @@ import os
 import json
 import pandas as pd
 from PyPDF2 import PdfReader
+import hashlib
 
 router = APIRouter()
 
@@ -80,9 +81,13 @@ class MD5:
 
 
 async def md5_file(file: UploadFile) -> str:
-    md5 = MD5()
-    while chunk := await file.read(64):
+    # Використовуємо hashlib для MD5
+    md5 = hashlib.md5()
+
+    # Читаємо файл великими блоками (наприклад, 8 КБ)
+    while chunk := await file.read(8192):
         md5.update(chunk)
+
     return md5.hexdigest()
 
 
@@ -115,8 +120,8 @@ async def download_results():
 
 @router.post("/lab2/md5_file", response_class=HTMLResponse)
 async def hash_file(request: Request, file: UploadFile = File(...)):
-    # Хешуємо файл
-    file_hash = await md5_file(file)
+    # Хешуємо файл паралельно
+    file_hash = await md5_file_parallel(file)
 
     # Повертаємо результат хешування і відображаємо форму для перевірки
     return templates.TemplateResponse("index.html", {"request": request, "file_hash": file_hash, "file": file})
@@ -205,3 +210,36 @@ async def read_json(file: UploadFile) -> str:
     # Витягуємо значення для ключа "text"
     value = json_data.get("text", "")
     return str(value)
+
+
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+
+# Розмір блоку для читання
+CHUNK_SIZE = 8 * 1024 * 1024  # 8 МБ
+
+def hash_chunk(chunk):
+    # Створюємо локальний екземпляр MD5 і оновлюємо його для блоку
+    md5 = hashlib.md5()
+    md5.update(chunk)
+    return md5.digest()  # Повертаємо байти, щоб комбінувати їх пізніше
+
+async def md5_file_parallel(file: UploadFile) -> str:
+    # Використовуємо ThreadPoolExecutor для багатопоточного хешування
+    loop = asyncio.get_event_loop()
+    executor = ThreadPoolExecutor()
+
+    # Список для збереження хешів частин файлу
+    hash_parts = []
+
+    while chunk := await file.read(CHUNK_SIZE):
+        # Обчислюємо хеш для кожної частини паралельно
+        hash_part = await loop.run_in_executor(executor, hash_chunk, chunk)
+        hash_parts.append(hash_part)
+
+    # Створюємо фінальний хеш на основі всіх частин
+    final_md5 = hashlib.md5()
+    for part in hash_parts:
+        final_md5.update(part)
+
+    return final_md5.hexdigest()

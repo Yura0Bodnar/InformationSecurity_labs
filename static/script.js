@@ -25,5 +25,7 @@ function downloadResults() {
     window.location.href = '/download_results'; // Завантаження файлу
 }
 
-// Виклик функції для завантаження активної лабораторної роботи при завантаженні сторінки
-window.onload = loadActiveLab;
+function showLoadingMessage() {
+    // Відображаємо повідомлення
+    document.getElementById('loadingMessage').style.display = 'block';
+}

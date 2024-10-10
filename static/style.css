@@ -93,3 +93,20 @@ body {
         width: 90%; /* Зменшуємо ширину на маленьких екранах */
     }
 }
+/* Повідомлення про завантаження */
+#loadingMessage {
+    display: none; /* Спочатку приховуємо повідомлення */
+    position: fixed; /* Відображаємо зверху всього контенту */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Центруємо повідомлення */
+    background-color: rgba(0, 0, 0, 0.8); /* Напівпрозорий фон */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 100; /* Вищий пріоритет для перекриття інших елементів */
+    font-size: 18px;
+    text-align: center;
+}
+
+
