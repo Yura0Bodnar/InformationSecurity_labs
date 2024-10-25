@@ -1,35 +1,24 @@
-/* Основний стиль для сторінки */
-body {
+html, body {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
+    height: 100%; /* Гарантуємо, що body займає 100% висоти вікна */
+    overflow-x: hidden;
 }
 
-/* Фон і структура сторінки */
 .background {
-    position: relative;
+    position: relative; /* Фіксуємо фон для повного перекриття */
+    top: 0;
+    left: 0;
     background-image: url('images/images.jpg');
-    background-size: cover;
+    background-size: cover; /* Забезпечує розтягування зображення на всю площу */
     background-repeat: no-repeat;
+    background-attachment: fixed; /* Фон фіксований при скролі */
     background-position: center;
+    width: 100vw; /* Використовуємо 100% ширини вікна */
+    height: 100vh; /* Використовуємо 100% висоти вікна */
+    z-index: -1; /* Фон залишається позаду всього контенту */
     font-family: Arial, sans-serif;
     color: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Центруємо горизонтально */
-}
-
-/* Стиль для контейнера контенту */
-.content {
-    flex-grow: 1;
-    padding: 80px 20px;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Вирівнюємо всі лабораторні зверху */
 }
 
 /* Верхнє меню */
@@ -69,30 +58,13 @@ body {
     background-color: #cc5505;
 }
 
-/* Стиль для блоків лабораторних робіт */
-.lab-content {
-    display: none; /* Спочатку приховуємо всі лабораторні роботи */
-    width: 500px;
-    background-color: #333;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgb(255, 255, 255);
-    position: relative; /* Відносна позиція всередині контейнера */
-    z-index: 1;
-}
-
-/* Відображення активної лабораторної роботи */
-.lab-content.active {
-    display: block; /* Показуємо активну лабораторну роботу */
-    z-index: 2; /* Активній лабораторній роботі надаємо вищий пріоритет */
-}
-
 /* Додатковий стиль для маленьких екранів */
 @media screen and (max-width: 768px) {
     .lab-content {
         width: 90%; /* Зменшуємо ширину на маленьких екранах */
     }
 }
+
 /* Повідомлення про завантаження */
 #loadingMessage {
     display: none; /* Спочатку приховуємо повідомлення */
@@ -109,4 +81,26 @@ body {
     text-align: center;
 }
 
+/* Стиль для контейнера контенту */
+.content {
+    flex-grow: 1;
+    padding: 80px 20px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Центруємо всі лабораторні по вертикалі */
+}
 
+/* Стиль для блоків лабораторних робіт */
+.lab-content {
+    display: none; /* Спочатку приховуємо всі лабораторні роботи */
+    width: 500px;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgb(255, 255, 255);
+    position: relative; /* Відносна позиція всередині контейнера */
+    z-index: 1;
+}

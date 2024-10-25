@@ -13,6 +13,46 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
+class LemerGenerator:
+    def __init__(self, seed=1, a=48271, c=0, m=2 ** 31):
+        self.a = a
+        self.c = c
+        self.m = m
+        self.state = seed
+        self.generated_numbers = []
+
+    def next(self):
+        """Generates the next number in the sequence."""
+        self.state = (self.a * self.state + self.c) % self.m
+        self.generated_numbers.append(self.state)
+        return self.state
+
+    def get_bytes(self, num_bytes):
+        """Generates `num_bytes` worth of random data."""
+        result = b''
+        while len(result) < num_bytes:
+            number = self.next()
+            result += number.to_bytes(4, byteorder='big')
+        return result[:num_bytes]
+
+    def save_to_file(self, filename):
+        """Saves generated numbers to a file."""
+        try:
+            with open(filename, 'w') as f:
+                for num in self.generated_numbers:
+                    f.write(f"{num}\n")
+        except IOError as e:
+            print(f"Error saving file: {e}")
+
+    def find_period(self):
+        sequence = self.generated_numbers  # Using the generated numbers
+        length = len(sequence)
+        for period in range(1, length // 2 + 1):
+            if sequence[:period] == sequence[period:2 * period]:
+                return period
+        return length
+
+
 def linear_congruential_generator(m, a, c, x0, n):
     sequence = []
     x = x0
