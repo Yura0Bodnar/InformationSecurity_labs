@@ -1,24 +1,18 @@
-html, body {
+body {
     margin: 0;
     padding: 0;
-    height: 100%; /* Гарантуємо, що body займає 100% висоти вікна */
-    overflow-x: hidden;
 }
 
 .background {
-    position: relative; /* Фіксуємо фон для повного перекриття */
-    top: 0;
-    left: 0;
+    position: fixed;
     background-image: url('images/images.jpg');
-    background-size: cover; /* Забезпечує розтягування зображення на всю площу */
+    background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Фон фіксований при скролі */
     background-position: center;
-    width: 100vw; /* Використовуємо 100% ширини вікна */
-    height: 100vh; /* Використовуємо 100% висоти вікна */
-    z-index: -1; /* Фон залишається позаду всього контенту */
     font-family: Arial, sans-serif;
     color: #fff;
+    height: 100%;
+    width: 100%;
 }
 
 /* Верхнє меню */
