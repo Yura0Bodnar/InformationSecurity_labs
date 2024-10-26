@@ -67,38 +67,38 @@ function checkDecryptTextPassword() {
 
 
 
-        async function encryptFile(event) {
-            event.preventDefault();  // Зупиняємо стандартне відправлення форми
+async function encryptFile(event) {
+    event.preventDefault();  // Зупиняємо стандартне відправлення форми
 
-            const formData = new FormData();
-            const fileInput = document.getElementById('encryptFile');
-            const file = fileInput.files[0];
+    const formData = new FormData();
+    const fileInput = document.getElementById('encryptFile');
+    const file = fileInput.files[0];
 
-            if (!file) {
-                alert("Будь ласка, виберіть файл для шифрування.");
-                return;
-            }
+    if (!file) {
+        alert("Будь ласка, виберіть файл для шифрування.");
+        return;
+    }
 
-            formData.append("encrypt_file", file);
+    formData.append("encrypt_file", file);
 
-            try {
-                const response = await fetch("/lab3/encrypt_file", {
-                    method: "POST",
-                    body: formData
-                });
+    try {
+        const response = await fetch("/lab3/encrypt_file", {
+            method: "POST",
+            body: formData
+        });
 
-                if (response.ok) {
-                    const result = await response.text();
-                    document.getElementById('encryptFileSuccess').style.display = 'block';
-                    document.getElementById('encryptFileSuccess').innerText = "Файл успішно зашифровано!";
-                } else {
-                    alert("Сталася помилка під час шифрування.");
-                }
-            } catch (error) {
-                console.error("Помилка:", error);
-                alert("Сталася помилка під час шифрування.");
-            }
+        if (response.ok) {
+            const result = await response.text();
+            document.getElementById('encryptFileSuccess').style.display = 'block';
+            document.getElementById('encryptFileSuccess').innerText = "Файл успішно зашифровано!";
+        } else {
+            alert("Сталася помилка під час шифрування.");
         }
+    } catch (error) {
+        console.error("Помилка:", error);
+        alert("Сталася помилка під час шифрування.");
+    }
+}
 
 async function decryptFile(event) {
     event.preventDefault();  // Зупиняємо стандартне відправлення форми
