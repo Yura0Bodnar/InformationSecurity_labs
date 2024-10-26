@@ -125,40 +125,39 @@
         <div id="lab3" class="lab-content">
             <h2>Лабораторна робота 3: RC5 шифрування</h2>
 
-            <!-- Поле для введення пароля на етапі шифрування -->
             <div id="passwordSection">
-                <h3>Введіть пароль для шифрування:</h3>
-                <form id="passwordForm" onsubmit="setEncryptionPassword(); return false;">
-                    <label for="encryptionPassword">Пароль для шифрування:</label>
-                    <input type="password" id="encryptionPassword" name="encryption_password" required>
-                    <button type="submit">Підтвердити пароль</button>
-                </form>
+            <h3>Введіть пароль для шифрування:</h3>
+            <form id="passwordForm" onsubmit="submitPasswordForm(event); return false;">
+                <label for="encryptionPassword">Пароль для шифрування:</label>
+                <input type="password" id="encryptionPassword" name="encryption_password" required>
+                <button type="submit">Підтвердити пароль</button>
+            </form>
+            <p id="passwordSaveMessage" style="display: none;"></p>
             </div>
 
-            <!-- Етапи шифрування та дешифрування -->
             <div id="encryptionSection" style="display: none;">
-                <!-- Етап 1: Шифрування файлу -->
-                <h3>1. Шифрування файлу</h3>
-                <form id="encryptFileForm" enctype="multipart/form-data">
-                    <label for="encryptFile">Виберіть файл для шифрування:</label>
-                    <input type="file" id="encryptFile" name="encrypt_file" required><br>
-                    <button type="submit">Шифрувати файл</button>
-                </form>
-                <p id="encryptFileSuccess" style="color: green; display: none;">Файл успішно зашифровано!</p>
+            <h3>1. Шифрування файлу</h3>
+            <form id="encryptFileForm" enctype="multipart/form-data">
+            <label for="encryptFile">Виберіть файл для шифрування:</label>
+            <input type="file" id="encryptFile" required><br>
+            <button type="submit">Шифрувати файл</button>
+            </form>
 
-                <!-- Етап 2: Дешифрування файлу -->
+            <p id="encryptFileMessage" style="display: none; color: red;"></p>
+
+                <!--Етап 2: Дешифрування файлу-->
                 <h3>2. Дешифрування файлу</h3>
-                <form id="decryptFileForm" enctype="multipart/form-data" onsubmit="return checkDecryptFilePassword();">
+                <form id="decryptFileForm" enctype="multipart/form-data">
                     <label for="decryptFile">Виберіть файл для дешифрування:</label>
-                    <input type="file" id="decryptFile" name="decrypt_file" required><br>
+                    <input type="file" id="decryptFile" required><br>
                     <label for="decryptFilePassword">Пароль для дешифрування:</label>
-                    <input type="password" id="decryptFilePassword" name="decrypt_password" required><br>
+                    <input type="password" id="decryptFilePassword" required><br>
                     <button type="submit">Дешифрувати файл</button>
                 </form>
                 <p id="decryptFileSuccess" style="color: green; display: none;">Файл успішно дешифровано!</p>
                 <p id="decryptError" style="color: red; display: none;">Дешифрування не відбулося. Неправильний пароль.</p>
-
-                <!-- Етап 3: Шифрування тексту -->
+<!--
+                Етап 3: Шифрування тексту
                 <h3>3. Шифрування тексту</h3>
                 <form method="POST" action="/lab3/encrypt_text">
                     <label for="encryptText">Введіть текст для шифрування:</label>
@@ -166,7 +165,7 @@
                     <button type="submit">Шифрувати текст</button>
                 </form>
 
-                <!-- Етап 4: Дешифрування шифротексту -->
+                Етап 4: Дешифрування шифротексту
                 <h3>4. Дешифрування шифротексту</h3>
                 <form method="POST" action="/lab3/decrypt_text" onsubmit="return checkDecryptTextPassword();">
                     <label for="decryptText">Введіть шифротекст для дешифрування:</label>
@@ -175,11 +174,11 @@
                     <input type="password" id="decryptTextPassword" name="decrypt_password" required><br>
                     <button type="submit">Дешифрувати текст</button>
                 </form>
+                -->
+                </div>
             </div>
         </div>
     </div>
-    </div>
-
     <script src="../static/script.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, UploadFile, Form
 from fastapi.templating import Jinja2Templates
 import struct
 import os
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi import Request
 from routers.lab1 import LemerGenerator  # Імпортуємо генератор Лемера для IV
 from routers.lab2 import MD5_a  # Імпортуємо MD5 для генерації ключів
@@ -199,36 +199,41 @@ async def set_password(password: str = Form(...)):
 
 @router.post("/lab3/encrypt_file")
 async def encrypt_file(request: Request, encrypt_file: UploadFile = File(...)):
+    print("Received file encryption request")
+
     if not saved_password:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "No password saved!"})
+        return JSONResponse(content={"message": "No password saved!"}, status_code=400)
 
-    file_location = f"files/{encrypt_file.filename}"
+    # File handling logic
+    file_location = f"{encrypt_file.filename}"
     with open(file_location, "wb") as file:
-        file.write(await encrypt_file.read())
+        file_content = await encrypt_file.read()
+        file.write(file_content)
+    print("File saved locally:", file_location)
 
-    # Виконуємо шифрування
+    # Encryption process
     md5_service = MD5_a()
-    key = md5_service.hexdigest().encode('utf-8')[:16]  # Тільки 16 байтів
+    key = md5_service.hexdigest().encode('utf-8')[:16]  # Only 16 bytes
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
-    encrypted_file_location = file_location + ".enc"
+    encrypted_file_location = file_location.replace(".txt", ".enc")
     rc5.encrypt_file(file_location, encrypted_file_location)
+    print("File encrypted:", encrypted_file_location)
 
-    return templates.TemplateResponse("index.html",
-                                      {"request": request, "message": f"File encrypted: {encrypted_file_location}"})
+    return JSONResponse(content={"message": f"File encrypted: {encrypted_file_location}"})
 
 
 @router.post("/lab3/decrypt_file")
-async def decrypt_file(request: Request, decrypt_file: UploadFile = File(...), password: str = Form(...)):
+async def decrypt_file(decrypt_file: UploadFile = File(...), password: str = Form(...)):
     global saved_password
     if saved_password != password:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "Incorrect password!"})
+        return JSONResponse(content={"message": "Incorrect password!"}, status_code=400)
 
-    file_location = f"files/{decrypt_file.filename}"
+    file_location = f"{decrypt_file.filename}"
     with open(file_location, "wb") as file:
         file.write(await decrypt_file.read())
 
-    # Виконуємо дешифрування
+    # Дешифрування файлу (імітація)
     md5_service = MD5_a()
     key = md5_service.hexdigest().encode('utf-8')[:16]  # Тільки 16 байтів
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
@@ -236,8 +241,7 @@ async def decrypt_file(request: Request, decrypt_file: UploadFile = File(...), p
     decrypted_file_location = file_location.replace(".enc", "_decrypted.txt")
     rc5.decrypt_file(file_location, decrypted_file_location)
 
-    return templates.TemplateResponse("index.html",
-                                      {"request": request, "message": f"File decrypted: {decrypted_file_location}"})
+    return JSONResponse(content={"message": f"File decrypted: {decrypted_file_location}"})
 
 
 @router.post("/lab3/encrypt_text")

@@ -14,8 +14,6 @@ function loadActiveLab(labId) {
     });
 }
 
-// Функція для показу конкретної лабораторної роботи
-
 // Функція для завантаження результатів (для першої лабораторної роботи)
 function downloadResults() {
     window.location.href = '/download_results'; // Завантаження файлу
@@ -26,18 +24,42 @@ function showLoadingMessage() {
     document.getElementById('loadingMessage').style.display = 'block';
 }
 
-// Зберігаємо пароль для шифрування
-let encryptionPassword = '';
+let encryptionPassword;
 
-// Функція для встановлення пароля для шифрування
-function setEncryptionPassword() {
-    // Зберігаємо пароль
-    encryptionPassword = document.getElementById("encryptionPassword").value;
+async function submitPasswordForm(event) {
+    event.preventDefault(); // Prevent the default form submission
 
-    // Показуємо секцію з шифруванням/дешифруванням
-    document.getElementById("encryptionSection").style.display = "block";
-    document.getElementById("passwordSection").style.display = "none";
+    const password = document.getElementById("encryptionPassword").value;
+
+    try {
+        const response = await fetch("/lab3/set_password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ "password": password })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data.message); // Log success message
+
+            // Display the success message to the user
+            document.getElementById("passwordSaveMessage").style.display = "block";
+            document.getElementById("passwordSaveMessage").textContent = data.message;
+
+            // Show the encryption section and hide the password section
+            document.getElementById("encryptionSection").style.display = "block";
+            document.getElementById("passwordSection").style.display = "none";
+        } else {
+            console.error("Failed to save password.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
 }
+
+
 
 // Функція для перевірки пароля при дешифруванні файлу
 function checkDecryptFilePassword() {
@@ -66,46 +88,68 @@ function checkDecryptTextPassword() {
 }
 
 
-
 async function encryptFile(event) {
-    event.preventDefault();  // Зупиняємо стандартне відправлення форми
+    console.log("Encrypt file function triggered");
+    event.preventDefault(); // Prevent form submission and page reload
+    console.log("Form submission prevented");
 
-    const formData = new FormData();
-    const fileInput = document.getElementById('encryptFile');
+    const fileInput = document.getElementById("encryptFile");
     const file = fileInput.files[0];
+    const messageElement = document.getElementById("encryptFileMessage");
 
     if (!file) {
-        alert("Будь ласка, виберіть файл для шифрування.");
-        return;
+        console.error("No file selected.");
+        messageElement.style.display = "block";
+        messageElement.textContent = "Please select a file to encrypt.";
+        return false;
     }
 
+    console.log("File selected:", file.name);
+
+    const formData = new FormData();
     formData.append("encrypt_file", file);
 
     try {
+        console.log("Sending POST request to /lab3/encrypt_file...");
+
         const response = await fetch("/lab3/encrypt_file", {
             method: "POST",
             body: formData
         });
 
+        const responseData = await response.json();
+        console.log("Response received:", responseData);
+
         if (response.ok) {
-            const result = await response.text();
-            document.getElementById('encryptFileSuccess').style.display = 'block';
-            document.getElementById('encryptFileSuccess').innerText = "Файл успішно зашифровано!";
+            console.log("File encrypted successfully.");
+            messageElement.style.display = "block";
+            messageElement.style.color = "green";
+            messageElement.textContent = responseData.message;
         } else {
-            alert("Сталася помилка під час шифрування.");
+            console.error("File encryption failed. Status:", response.status);
+            messageElement.style.display = "block";
+            messageElement.style.color = "red";
+            messageElement.textContent = responseData.message || "File encryption failed.";
         }
     } catch (error) {
-        console.error("Помилка:", error);
-        alert("Сталася помилка під час шифрування.");
+        console.error("Error during file encryption:", error);
+        messageElement.style.display = "block";
+        messageElement.style.color = "red";
+        messageElement.textContent = "Error during encryption.";
     }
+
+    return false; // Ensure no default behavior occurs
 }
 
-async function decryptFile(event) {
-    event.preventDefault();  // Зупиняємо стандартне відправлення форми
 
-    const formData = new FormData();
+async function decryptFile(event) {
+    event.preventDefault(); // Зупиняємо стандартне відправлення форми
+
     const fileInput = document.getElementById('decryptFile');
     const passwordInput = document.getElementById('decryptFilePassword');
+    const messageElement = document.getElementById("decryptError");
+    const successElement = document.getElementById("decryptFileSuccess");
+
     const file = fileInput.files[0];
     const password = passwordInput.value;
 
@@ -114,8 +158,9 @@ async function decryptFile(event) {
         return;
     }
 
+    const formData = new FormData();
     formData.append("decrypt_file", file);
-    formData.append("decrypt_password", password);
+    formData.append("password", password);
 
     try {
         const response = await fetch("/lab3/decrypt_file", {
@@ -124,14 +169,24 @@ async function decryptFile(event) {
         });
 
         if (response.ok) {
-            const result = await response.text();
-            document.getElementById('decryptFileSuccess').style.display = 'block';
-            document.getElementById('decryptFileSuccess').innerText = "Файл успішно дешифровано!";
+            const data = await response.json(); // Припустимо, що ви повертаєте JSON
+            successElement.style.display = 'block';
+            successElement.textContent = data.message;
+            messageElement.style.display = 'none'; // Приховуємо помилку, якщо вона була
         } else {
-            document.getElementById('decryptError').style.display = 'block';
+            successElement.style.display = 'none';
+            messageElement.style.display = 'block';
+            messageElement.textContent = "Дешифрування не відбулося. Неправильний пароль або інша помилка.";
+            console.log("Response status:", response.status);
+            console.log("Response body:", await response.text());
         }
     } catch (error) {
-        console.error("Помилка:", error);
-        document.getElementById('decryptError').style.display = 'block';
+        successElement.style.display = 'none';
+        messageElement.style.display = 'block';
+        messageElement.textContent = "Помилка під час дешифрування файлу.";
+        console.error("Error during decryption:", error);
     }
 }
+
+document.getElementById("encryptFileForm").addEventListener("submit", encryptFile);
+document.getElementById("decryptFileForm").addEventListener("submit", decryptFile);
