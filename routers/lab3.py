@@ -216,7 +216,9 @@ async def encrypt_file(request: Request, encrypt_file: UploadFile = File(...)):
     key = md5_service.hexdigest().encode('utf-8')[:16]  # Only 16 bytes
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
-    encrypted_file_location = file_location.replace(".txt", ".enc")
+    base_name = file_location.rpartition('.')[0]
+    encrypted_file_location = f"{base_name}_encrypted.enc"
+
     rc5.encrypt_file(file_location, encrypted_file_location)
     print("File encrypted:", encrypted_file_location)
 
@@ -238,18 +240,17 @@ async def decrypt_file(decrypt_file: UploadFile = File(...), password: str = For
     key = md5_service.hexdigest().encode('utf-8')[:16]  # Тільки 16 байтів
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
-    decrypted_file_location = file_location.replace(".enc", "_decrypted.txt")
+    decrypted_file_location = file_location.replace("_encrypted.enc", "_decrypted.enc")
     rc5.decrypt_file(file_location, decrypted_file_location)
 
     return JSONResponse(content={"message": f"File decrypted: {decrypted_file_location}"})
 
 
 @router.post("/lab3/encrypt_text")
-async def encrypt_text(request: Request, input_text: str = Form(...)):
+async def encrypt_text(input_text: str = Form(...)):
     if not saved_password:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "No password saved!"})
+        return JSONResponse(content={"message": "No password saved!"}, status_code=400)
 
-    # Виконуємо шифрування тексту
     md5_service = MD5_a()
     key = md5_service.hexdigest().encode('utf-8')[:16]
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
@@ -261,17 +262,15 @@ async def encrypt_text(request: Request, input_text: str = Form(...)):
     ciphertext = rc5.encrypt_console(input_text.encode('utf-8'), iv)
     encrypted_text = (iv + ciphertext).hex()
 
-    return templates.TemplateResponse("index.html",
-                                      {"request": request, "message": f"Encrypted text: {encrypted_text}"})
+    return JSONResponse(content={"message": f"Encrypted text: {encrypted_text}"})
 
 
 @router.post("/lab3/decrypt_text")
-async def decrypt_text(request: Request, input_text: str = Form(...), password: str = Form(...)):
+async def decrypt_text(input_text: str = Form(...), password: str = Form(...)):
     global saved_password
     if saved_password != password:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "Incorrect password!"})
+        return JSONResponse(content={"message": "Incorrect password!"}, status_code=400)
 
-    # Виконуємо дешифрування тексту
     md5_service = MD5_a()
     key = md5_service.hexdigest().encode('utf-8')[:16]
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
@@ -282,7 +281,6 @@ async def decrypt_text(request: Request, input_text: str = Form(...), password: 
         ciphertext_body = ciphertext[8:]
         decrypted_text = rc5.decrypt_console(ciphertext_body, iv).decode('utf-8')
     except ValueError as e:
-        return templates.TemplateResponse("index.html", {"request": request, "message": f"Decryption failed: {e}"})
+        return JSONResponse(content={"message": f"Decryption failed: {str(e)}"}, status_code=400)
 
-    return templates.TemplateResponse("index.html",
-                                      {"request": request, "message": f"Decrypted text: {decrypted_text}"})
+    return JSONResponse(content={"message": f"Decrypted text: {decrypted_text}"})

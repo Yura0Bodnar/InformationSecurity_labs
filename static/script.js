@@ -19,11 +19,6 @@ function downloadResults() {
     window.location.href = '/download_results'; // Завантаження файлу
 }
 
-function showLoadingMessage() {
-    // Відображаємо повідомлення
-    document.getElementById('loadingMessage').style.display = 'block';
-}
-
 let encryptionPassword;
 
 async function submitPasswordForm(event) {
@@ -60,20 +55,6 @@ async function submitPasswordForm(event) {
 }
 
 
-
-// Функція для перевірки пароля при дешифруванні файлу
-function checkDecryptFilePassword() {
-    const decryptPassword = document.getElementById("decryptFilePassword").value;
-
-    // Перевірка, чи збігається пароль із тим, що був введений при шифруванні
-    if (decryptPassword === encryptionPassword) {
-        return true; // Дешифрування відбувається
-    } else {
-        document.getElementById("decryptFileError").style.display = "block"; // Вивести помилку
-        return false; // Зупиняємо виконання дешифрування
-    }
-}
-
 // Функція для перевірки пароля при дешифруванні тексту
 function checkDecryptTextPassword() {
     const decryptPassword = document.getElementById("decryptTextPassword").value;
@@ -87,63 +68,68 @@ function checkDecryptTextPassword() {
     }
 }
 
+// Функція для відображення повідомлення про завантаження
+function showLoadingMessage() {
+    document.getElementById('loadingMessage').style.display = 'block';
+}
 
+// Функція для приховування повідомлення про завантаження
+function hideLoadingMessage() {
+    document.getElementById('loadingMessage').style.display = 'none';
+}
+
+// Оновлена функція шифрування файлів із використанням loadingMessage
 async function encryptFile(event) {
-    console.log("Encrypt file function triggered");
-    event.preventDefault(); // Prevent form submission and page reload
-    console.log("Form submission prevented");
+    event.preventDefault(); // Зупиняємо стандартне відправлення форми
+    showLoadingMessage(); // Показуємо повідомлення про завантаження
 
     const fileInput = document.getElementById("encryptFile");
     const file = fileInput.files[0];
     const messageElement = document.getElementById("encryptFileMessage");
 
     if (!file) {
-        console.error("No file selected.");
+        console.error("File not provided.");
         messageElement.style.display = "block";
         messageElement.textContent = "Please select a file to encrypt.";
+        hideLoadingMessage(); // Приховуємо повідомлення про завантаження
         return false;
     }
-
-    console.log("File selected:", file.name);
 
     const formData = new FormData();
     formData.append("encrypt_file", file);
 
     try {
-        console.log("Sending POST request to /lab3/encrypt_file...");
-
         const response = await fetch("/lab3/encrypt_file", {
             method: "POST",
             body: formData
         });
 
         const responseData = await response.json();
-        console.log("Response received:", responseData);
-
         if (response.ok) {
-            console.log("File encrypted successfully.");
             messageElement.style.display = "block";
             messageElement.style.color = "green";
             messageElement.textContent = responseData.message;
         } else {
-            console.error("File encryption failed. Status:", response.status);
             messageElement.style.display = "block";
             messageElement.style.color = "red";
-            messageElement.textContent = responseData.message || "File encryption failed.";
+            messageElement.textContent = "File encryption failed.";
         }
     } catch (error) {
         console.error("Error during file encryption:", error);
         messageElement.style.display = "block";
         messageElement.style.color = "red";
         messageElement.textContent = "Error during encryption.";
+    } finally {
+        hideLoadingMessage(); // Приховуємо повідомлення після завершення операції
     }
 
-    return false; // Ensure no default behavior occurs
+    return false;
 }
 
-
+// Оновлена функція дешифрування файлів із використанням loadingMessage
 async function decryptFile(event) {
-    event.preventDefault(); // Зупиняємо стандартне відправлення форми
+    event.preventDefault();  // Зупиняємо стандартне відправлення форми
+    showLoadingMessage(); // Показуємо повідомлення про завантаження
 
     const fileInput = document.getElementById('decryptFile');
     const passwordInput = document.getElementById('decryptFilePassword');
@@ -155,6 +141,7 @@ async function decryptFile(event) {
 
     if (!file || !password) {
         alert("Будь ласка, виберіть файл та введіть пароль для дешифрування.");
+        hideLoadingMessage(); // Приховуємо повідомлення про завантаження
         return;
     }
 
@@ -168,8 +155,8 @@ async function decryptFile(event) {
             body: formData
         });
 
+        const data = await response.json();
         if (response.ok) {
-            const data = await response.json(); // Припустимо, що ви повертаєте JSON
             successElement.style.display = 'block';
             successElement.textContent = data.message;
             messageElement.style.display = 'none'; // Приховуємо помилку, якщо вона була
@@ -177,16 +164,93 @@ async function decryptFile(event) {
             successElement.style.display = 'none';
             messageElement.style.display = 'block';
             messageElement.textContent = "Дешифрування не відбулося. Неправильний пароль або інша помилка.";
-            console.log("Response status:", response.status);
-            console.log("Response body:", await response.text());
         }
     } catch (error) {
+        console.error("Error during decryption:", error);
         successElement.style.display = 'none';
         messageElement.style.display = 'block';
         messageElement.textContent = "Помилка під час дешифрування файлу.";
-        console.error("Error during decryption:", error);
+    } finally {
+        hideLoadingMessage(); // Приховуємо повідомлення після завершення операції
     }
 }
 
+
 document.getElementById("encryptFileForm").addEventListener("submit", encryptFile);
 document.getElementById("decryptFileForm").addEventListener("submit", decryptFile);
+
+
+// Функція для асинхронного шифрування тексту
+async function encryptTextForm(event) {
+    event.preventDefault(); // Зупиняємо стандартне відправлення форми
+    showLoadingMessage(); // Показуємо повідомлення про завантаження
+
+    const text = document.getElementById("encryptText").value;
+    const messageElement = document.getElementById("encryptTextMessage");
+
+    try {
+        const response = await fetch("/lab3/encrypt_text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ "input_text": text })
+        });
+
+        if (response.ok) {
+            const data = await response.text();
+            messageElement.style.display = "block";
+            messageElement.style.color = "green";
+            messageElement.innerHTML = data;
+        } else {
+            messageElement.style.display = "block";
+            messageElement.style.color = "red";
+            messageElement.innerHTML = "Шифрування не вдалося.";
+        }
+    } catch (error) {
+        console.error("Помилка під час шифрування тексту:", error);
+        messageElement.style.display = "block";
+        messageElement.style.color = "red";
+        messageElement.innerHTML = "Помилка під час шифрування тексту.";
+    } finally {
+        hideLoadingMessage(); // Приховуємо повідомлення після завершення операції
+    }
+}
+
+// Функція для асинхронного дешифрування тексту
+async function decryptTextForm(event) {
+    event.preventDefault();
+
+    const encryptedText = document.getElementById("decryptText").value;
+    const password = document.getElementById("decryptTextPassword").value;
+
+    try {
+        const response = await fetch("/lab3/decrypt_text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ "input_text": encryptedText, "password": password })
+        });
+
+        if (response.ok) {
+            const data = await response.text();
+            document.getElementById("decryptTextMessage").style.display = "block";
+            document.getElementById("decryptTextMessage").style.color = "green";
+            document.getElementById("decryptTextMessage").innerHTML = data;
+        } else {
+            document.getElementById("decryptTextMessage").style.display = "block";
+            document.getElementById("decryptTextMessage").style.color = "red";
+            document.getElementById("decryptTextMessage").innerHTML = "Неправильний пароль.";
+        }
+    } catch (error) {
+        console.error("Помилка під час дешифрування тексту:", error);
+        document.getElementById("decryptTextMessage").style.display = "block";
+        document.getElementById("decryptTextMessage").style.color = "red";
+        document.getElementById("decryptTextMessage").innerHTML = "Помилка під час дешифрування тексту.";
+    }
+    return false;
+}
+
+document.getElementById("encryptTextForm").addEventListener("submit", encryptTextForm);
+document.getElementById("decryptTextForm").addEventListener("submit", decryptTextForm);

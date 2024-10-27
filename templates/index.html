@@ -8,6 +8,10 @@
 </head>
 <body>
     <div class="background">
+        <!-- Повідомлення "Зачекайте будь ласка" -->
+        <div id="loadingMessage" style="display: none; color: red;">
+            Зачекайте будь ласка...
+        </div>
         <div class="top-menu">
             <ul>
                 <li><button onclick="loadActiveLab('lab1')">Лабораторна робота 1</button></li>
@@ -69,7 +73,6 @@
                 </div>
                 {% endif %}
 
-
                 <!-- Хешування файлу -->
                 <h3>Хешування файлу:</h3>
                 <form method="POST" action="/lab2/process_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
@@ -77,11 +80,6 @@
                     <input type="file" id="fileHash" name="file" required>
                     <button type="submit">Отримати MD5 хеш</button>
                 </form>
-
-                <!-- Повідомлення "Зачекайте будь ласка" -->
-                <div id="loadingMessage" style="display: none; color: red;">
-                    Зачекайте будь ласка...
-                </div>
 <!--
                 {% if file_content %}
                     <h3>Вміст файлу: {{ filename }}</h3>
@@ -156,25 +154,24 @@
                 </form>
                 <p id="decryptFileSuccess" style="color: green; display: none;">Файл успішно дешифровано!</p>
                 <p id="decryptError" style="color: red; display: none;">Дешифрування не відбулося. Неправильний пароль.</p>
-<!--
-                Етап 3: Шифрування тексту
+
                 <h3>3. Шифрування тексту</h3>
-                <form method="POST" action="/lab3/encrypt_text">
+                <form id="encryptTextForm">
                     <label for="encryptText">Введіть текст для шифрування:</label>
-                    <input type="text" id="encryptText" name="input_string" required><br>
+                    <input type="text" id="encryptText" required><br>
                     <button type="submit">Шифрувати текст</button>
                 </form>
+                <p id="encryptTextMessage" style="display: none; color: green;"></p>
 
-                Етап 4: Дешифрування шифротексту
                 <h3>4. Дешифрування шифротексту</h3>
-                <form method="POST" action="/lab3/decrypt_text" onsubmit="return checkDecryptTextPassword();">
+                <form id="decryptTextForm">
                     <label for="decryptText">Введіть шифротекст для дешифрування:</label>
-                    <input type="text" id="decryptText" name="input_string" required><br>
+                    <input type="text" id="decryptText" required><br>
                     <label for="decryptTextPassword">Пароль для дешифрування:</label>
-                    <input type="password" id="decryptTextPassword" name="decrypt_password" required><br>
+                    <input type="password" id="decryptTextPassword" required><br>
                     <button type="submit">Дешифрувати текст</button>
                 </form>
-                -->
+                    <p id="decryptTextMessage" style="display: none; color: red;"></p>
                 </div>
             </div>
         </div>
