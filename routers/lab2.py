@@ -73,7 +73,6 @@ class MD5_a:
         return ''.join([struct.pack('<I', x).hex() for x in [self.A, self.B, self.C, self.D]]).upper()
 
 
-
 def save_results_to_file(hash_result, filename: str):
     try:
         # Відкриваємо файл на запис (створюється новий, якщо його не існує)
@@ -278,11 +277,13 @@ import asyncio
 # Розмір блоку для читання
 CHUNK_SIZE = 8 * 1024 * 1024  # 8 МБ
 
+
 def hash_chunk(chunk):
     # Створюємо локальний екземпляр MD5 і оновлюємо його для блоку
     md5 = hashlib.md5()
     md5.update(chunk)
     return md5.digest()  # Повертаємо байти, щоб комбінувати їх пізніше
+
 
 async def md5_file_parallel(file: UploadFile) -> str:
     # Використовуємо ThreadPoolExecutor для багатопоточного хешування

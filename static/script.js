@@ -198,10 +198,10 @@ async function encryptTextForm(event) {
         });
 
         if (response.ok) {
-            const data = await response.text();
+            const data = await response.json();
             messageElement.style.display = "block";
             messageElement.style.color = "green";
-            messageElement.innerHTML = data;
+            messageElement.innerHTML = data.message;
         } else {
             messageElement.style.display = "block";
             messageElement.style.color = "red";
@@ -234,10 +234,10 @@ async function decryptTextForm(event) {
         });
 
         if (response.ok) {
-            const data = await response.text();
+            const data = await response.json();
             document.getElementById("decryptTextMessage").style.display = "block";
             document.getElementById("decryptTextMessage").style.color = "green";
-            document.getElementById("decryptTextMessage").innerHTML = data;
+            document.getElementById("decryptTextMessage").innerHTML = data.message;
         } else {
             document.getElementById("decryptTextMessage").style.display = "block";
             document.getElementById("decryptTextMessage").style.color = "red";
