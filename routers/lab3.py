@@ -5,7 +5,7 @@ import os
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi import Request
 from routers.lab1 import LemerGenerator  # Імпортуємо генератор Лемера для IV
-from routers.lab2 import MD5_a  # Імпортуємо MD5 для генерації ключів
+from routers.lab2 import MD5  # Імпортуємо MD5 для генерації ключів
 
 
 router = APIRouter()
@@ -212,7 +212,7 @@ async def encrypt_file(request: Request, encrypt_file: UploadFile = File(...)):
     print("File saved locally:", file_location)
 
     # Encryption process
-    md5_service = MD5_a()
+    md5_service = MD5()
     key = md5_service.hexdigest().encode('utf-8')[:16]  # Only 16 bytes
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
@@ -236,7 +236,7 @@ async def decrypt_file(decrypt_file: UploadFile = File(...), password: str = For
         file.write(await decrypt_file.read())
 
     # Дешифрування файлу (імітація)
-    md5_service = MD5_a()
+    md5_service = MD5()
     key = md5_service.hexdigest().encode('utf-8')[:16]  # Тільки 16 байтів
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
@@ -251,7 +251,7 @@ async def encrypt_text(input_text: str = Form(...)):
     if not saved_password:
         return JSONResponse(content={"message": "No password saved!"}, status_code=400)
 
-    md5_service = MD5_a()
+    md5_service = MD5()
     key = md5_service.hexdigest().encode('utf-8')[:16]
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
@@ -271,7 +271,7 @@ async def decrypt_text(input_text: str = Form(...), password: str = Form(...)):
     if saved_password != password:
         return JSONResponse(content={"message": "Incorrect password!"}, status_code=400)
 
-    md5_service = MD5_a()
+    md5_service = MD5()
     key = md5_service.hexdigest().encode('utf-8')[:16]
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
