@@ -1,19 +1,33 @@
-body {
+html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 .background {
+    position: relative;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px; /* Якщо потрібен відступ для контенту */
+}
+
+.background::before {
+    content: "";
     position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
     background-image: url('images/images.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    font-family: Arial, sans-serif;
-    color: #fff;
-    height: 100%;
-    width: 100%;
+    z-index: -1;
+    opacity: 0.9; /* Можна налаштувати прозорість, якщо потрібно */
 }
+
 
 /* Верхнє меню */
 .top-menu {
@@ -77,14 +91,10 @@ body {
 
 /* Стиль для контейнера контенту */
 .content {
-    flex-grow: 1;
     padding: 80px 20px;
     position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* Центруємо всі лабораторні по вертикалі */
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Стиль для блоків лабораторних робіт */

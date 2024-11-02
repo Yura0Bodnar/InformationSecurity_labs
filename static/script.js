@@ -55,19 +55,6 @@ async function submitPasswordForm(event) {
 }
 
 
-// Функція для перевірки пароля при дешифруванні тексту
-function checkDecryptTextPassword() {
-    const decryptPassword = document.getElementById("decryptTextPassword").value;
-
-    // Перевірка, чи збігається пароль із тим, що був введений при шифруванні
-    if (decryptPassword === encryptionPassword) {
-        return true; // Дешифрування відбувається
-    } else {
-        document.getElementById("decryptTextError").style.display = "block"; // Вивести помилку
-        return false; // Зупиняємо виконання дешифрування
-    }
-}
-
 // Функція для відображення повідомлення про завантаження
 function showLoadingMessage() {
     document.getElementById('loadingMessage').style.display = 'block';
