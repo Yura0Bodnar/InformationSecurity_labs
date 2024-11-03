@@ -4,8 +4,9 @@ import struct
 import os
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi import Request
-from routers.lab1 import LemerGenerator  # Імпортуємо генератор Лемера для IV
+from routers.lab1 import LinearCongruentialGenerator # Імпортуємо генератор Лемера для IV
 from routers.lab2 import MD5  # Імпортуємо MD5 для генерації ключів
+import configparser
 
 
 router = APIRouter()
@@ -101,7 +102,14 @@ class RC5CBCPad:
     # Методи для роботи з файлами (Encryption, Decryption)
     def encrypt_file(self, input_filename, output_filename):
         seed = self.generate_seed()
-        lemer_generator = LemerGenerator(seed)
+
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        m = int(config["LCG"]["m"])
+        a = int(config["LCG"]["a"])
+        c = int(config["LCG"]["c"])
+
+        lemer_generator = LinearCongruentialGenerator(m=m, a=a, c=c, x0=seed)
         iv = lemer_generator.get_bytes(self.block_size)
 
         with open(input_filename, 'rb') as infile:
@@ -256,7 +264,13 @@ async def encrypt_text(input_text: str = Form(...)):
     rc5 = RC5CBCPad(key, word_size=32, num_rounds=20)
 
     seed = rc5.generate_seed()
-    lemer_generator = LemerGenerator(seed)
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    m = int(config["LCG"]["m"])
+    a = int(config["LCG"]["a"])
+    c = int(config["LCG"]["c"])
+
+    lemer_generator = LinearCongruentialGenerator(m=m, a=a, c=c, x0=seed)
     iv = lemer_generator.get_bytes(8)
 
     ciphertext = rc5.encrypt_console(input_text.encode('utf-8'), iv)
