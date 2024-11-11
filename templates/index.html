@@ -142,6 +142,8 @@
             </form>
 
             <p id="encryptFileMessage" style="display: none; color: red;"></p>
+            <!-- Додаємо елемент для відображення часу шифрування -->
+            <div id="encryptionTime" style="display:none;"></div>
 
                 <!--Етап 2: Дешифрування файлу-->
                 <h3>2. Дешифрування файлу</h3>
@@ -154,7 +156,7 @@
                 </form>
                 <p id="decryptFileSuccess" style="color: green; display: none;">Файл успішно дешифровано!</p>
                 <p id="decryptError" style="color: red; display: none;">Дешифрування не відбулося. Неправильний пароль.</p>
-
+                <div id="decryptionTime" style="display:none;"></div>
                 <h3>3. Шифрування тексту</h3>
                 <form id="encryptTextForm">
                     <label for="encryptText">Введіть текст для шифрування:</label>
@@ -226,20 +228,21 @@
 
                 <!-- Хешування файлу -->
                 <h3>Шифрування файлу:</h3>
-                    <form onsubmit="RSAFileEncryption(event)">
+                    <form method="POST" action="/lab4/rsa_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
                         <label for="inputFileRSA">Виберіть файл:</label>
                         <input type="file" id="inputFileRSA" name="encrypt_fileRSA" required>
                         <button type="submit">Зашифрувати</button>
                     </form>
 
-                    <div>
-                        <h4 style="color: {{ 'green' if file_hash_rsa else 'red' }}">
-                            {{ file_hash_rsa if file_hash_rsa else error_message }}
-                        </h4>
-                    </div>
+                    {% if file_hash_rsa%}
+                        <div>
+                            <h3 style="color: green;">{{ file_hash_rsa }}</h3>
+                            <h4>{{ rsa_enc_time }}</h4>
+                        </div>
+                        {% endif %}
 
                     <h3>Дешифрування файлу:</h3>
-                        <form onsubmit="RSAFileDecryption(event); return false;">
+                        <form method="POST" action="/lab4/decrypt_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
                             <label for="decryptFileRSA">Виберіть файл:</label>
                             <input type="file" id="decryptFileRSA" name="decrypt_fileRSA" required>
                             <button type="submit">Дешифрувати</button>
@@ -247,7 +250,8 @@
 
                         {% if decrypted_file_path %}
                         <div>
-                            <h4>Розшифрований файл:</h4>
+                            <h3>Розшифрований файл:</h3>
+                            <h4>{{ decryption_time }}</h4>
                             <form method="GET" action="/lab4/download_decrypted_file">
                                 <input type="hidden" name="file_path" value="{{ decrypted_file_path }}">
                                 <button type="submit">Завантажити розшифрований файл</button>

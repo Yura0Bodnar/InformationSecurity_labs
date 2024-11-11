@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import os
+import time
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -51,23 +52,35 @@ def decrypt_message(encrypted_data: bytes, private_key):
     return decrypted_data.decode()
 
 
+BLOCK_SIZE = 214
+
+
 async def encrypt_file(input_file: UploadFile, public_key) -> str:
-    """Шифрування файлу без створення директорії."""
+    """Шифрування файлу по блоках з використанням RSA."""
     try:
-        # Зчитуємо дані із завантаженого файлу
+        # Зчитуємо дані з файлу
         file_data = await input_file.read()
 
         # Перевіряємо, чи файл не порожній
         if not file_data:
             raise ValueError("Файл порожній. Немає даних для шифрування.")
 
-        # Шифруємо дані (без декодування в UTF-8)
+        # Ініціалізуємо шифратор RSA
         cipher = PKCS1_OAEP.new(public_key)
-        encrypted_data = cipher.encrypt(file_data)
 
-        # Формуємо шлях до вихідного файлу
+        # Шифруємо файл по блоках
+        encrypted_data = b""
+        for i in range(0, len(file_data), BLOCK_SIZE):
+            block = file_data[i:i + BLOCK_SIZE]
+            encrypted_block = cipher.encrypt(block)
+            encrypted_data += encrypted_block
+
+        # Формуємо шлях до вихідного зашифрованого файлу
         sanitized_filename = input_file.filename.replace(" ", "_")  # Уникаємо пробілів
-        output_file_path = f"encrypted_{sanitized_filename}"
+        # Видаляємо розширення файлу
+        file_name_without_extension, file_extension = os.path.splitext(sanitized_filename)
+        # Формуємо шлях до файлу з новим розширенням .enc
+        output_file_path = f"encrypted_{file_name_without_extension}.enc"
 
         # Записуємо зашифровані дані у файл
         with open(output_file_path, "wb") as enc_file:
@@ -75,20 +88,37 @@ async def encrypt_file(input_file: UploadFile, public_key) -> str:
 
         return output_file_path
     except Exception as e:
-        # Лог помилок
         raise RuntimeError(f"Помилка під час шифрування файлу: {e}")
 
 
 async def decrypt_file(encrypted_file: UploadFile, private_key) -> str:
-    """Розшифрування файлу."""
-    encrypted_data = await encrypted_file.read()
-    decrypted_data = decrypt_message(encrypted_data, private_key)
+    """Розшифрування файлу по блоках з використанням RSA."""
+    try:
+        # Зчитуємо зашифровані дані з файлу
+        encrypted_data = await encrypted_file.read()
 
-    output_file_path = f"uploads/decrypted_{encrypted_file.filename}"
-    with open(output_file_path, "w") as dec_file:
-        dec_file.write(decrypted_data)
+        # Ініціалізуємо шифратор RSA для дешифрування
+        cipher = PKCS1_OAEP.new(private_key)
 
-    return output_file_path
+        # Дешифруємо файл по блоках
+        decrypted_data = b""
+        block_size = private_key.size_in_bytes()
+        for i in range(0, len(encrypted_data), block_size):
+            encrypted_block = encrypted_data[i:i + block_size]
+            decrypted_block = cipher.decrypt(encrypted_block)
+            decrypted_data += decrypted_block
+
+        # Формуємо шлях до розшифрованого файлу
+        decrypted_file_path = f"decrypted_{encrypted_file.filename}"
+
+        # Відкриваємо файл для запису бінарних даних
+        with open(decrypted_file_path, "wb") as dec_file:
+            dec_file.write(decrypted_data)
+
+        return decrypted_file_path
+    except Exception as e:
+        raise RuntimeError(f"Помилка під час дешифрування файлу: {e}")
+
 
 
 @router.post("/lab4/generate_key", response_class=HTMLResponse)
@@ -142,13 +172,21 @@ async def decrypt_rsa_string(encrypted_text: str = Form(...)):
 @router.post("/lab4/rsa_file", response_class=HTMLResponse)
 async def rsa_file(request: Request, encrypt_fileRSA: UploadFile = File(...)):
     try:
+        start_time = time.time()
+
         public_key = load_public_key()
-        await encrypt_file(encrypt_fileRSA, public_key)
+        encrypted_file_path = await encrypt_file(encrypt_fileRSA, public_key)
+
+        # Обчислення часу виконання
+        end_time = time.time()
+        rsa_enc_time = end_time - start_time
 
         # Повертаємо повідомлення про успіх у шаблон
         return templates.TemplateResponse("index.html", {
             "request": request,
             "file_hash_rsa": "Файл успішно зашифровано.",
+            "encrypted_file_path": encrypted_file_path,
+            "rsa_enc_time": f"Час шифрування: {rsa_enc_time:.2f} секунд.",
             "show_lab4": True
         })
     except Exception as e:
@@ -162,18 +200,20 @@ async def rsa_file(request: Request, encrypt_fileRSA: UploadFile = File(...)):
 @router.post("/lab4/decrypt_file", response_class=HTMLResponse)
 async def decrypt_file_route(request: Request, decrypt_fileRSA: UploadFile = File(...)):
     try:
+        start_time = time.time()
+
         private_key = load_private_key()
         decrypted_file_path = await decrypt_file(decrypt_fileRSA, private_key)
 
-        # Зчитуємо вміст розшифрованого файлу для відображення в HTML
-        with open(decrypted_file_path, "r") as file:
-            decrypted_content = file.read()
+        # Обчислення часу виконання
+        end_time = time.time()
+        decryption_time = end_time - start_time
 
         # Повертаємо результат у HTML-шаблон
         return templates.TemplateResponse("index.html", {
             "request": request,
             "decrypted_file_path": decrypted_file_path,
-            "decrypted_content": decrypted_content,
+            "decryption_time": f"Час дешифрування: {decryption_time:.2f} секунд.",
             "show_lab4": True
         })
     except Exception as e:

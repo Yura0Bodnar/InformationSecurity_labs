@@ -7,6 +7,7 @@ from fastapi import Request
 from routers.lab1 import LinearCongruentialGenerator # Імпортуємо генератор Лемера для IV
 from routers.lab2 import MD5  # Імпортуємо MD5 для генерації ключів
 import configparser
+import time
 
 
 router = APIRouter()
@@ -207,6 +208,7 @@ async def set_password(password: str = Form(...)):
 
 @router.post("/lab3/encrypt_file")
 async def encrypt_file(request: Request, encrypt_file: UploadFile = File(...)):
+    start_time = time.time()
     print("Received file encryption request")
 
     if not saved_password:
@@ -230,11 +232,18 @@ async def encrypt_file(request: Request, encrypt_file: UploadFile = File(...)):
     rc5.encrypt_file(file_location, encrypted_file_location)
     print("File encrypted:", encrypted_file_location)
 
-    return JSONResponse(content={"message": f"File encrypted: {encrypted_file_location}"})
+    # Обчислення часу виконання
+    end_time = time.time()
+    rc5_enc_time = end_time - start_time
+
+    return JSONResponse(content={"message": f"File encrypted: {encrypted_file_location}",
+                                 "rc5_enc_time": f"Час шифрування: {rc5_enc_time:.2f} секунд.",})
 
 
 @router.post("/lab3/decrypt_file")
 async def decrypt_file(decrypt_file: UploadFile = File(...), password: str = Form(...)):
+    start_time = time.time()
+
     global saved_password
     if saved_password != password:
         return JSONResponse(content={"message": "Incorrect password!"}, status_code=400)
@@ -251,7 +260,12 @@ async def decrypt_file(decrypt_file: UploadFile = File(...), password: str = For
     decrypted_file_location = file_location.replace("_encrypted.enc", "_decrypted.enc")
     rc5.decrypt_file(file_location, decrypted_file_location)
 
-    return JSONResponse(content={"message": f"File decrypted: {decrypted_file_location}"})
+    # Обчислення часу виконання
+    end_time = time.time()
+    rc5_dec_time = end_time - start_time
+
+    return JSONResponse(content={"message": f"File decrypted: {decrypted_file_location}",
+                                 "rc5_dec_time": f"Час шифрування: {rc5_dec_time:.2f} секунд.",})
 
 
 @router.post("/lab3/encrypt_text")

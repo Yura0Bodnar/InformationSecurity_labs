@@ -64,7 +64,6 @@ function hideLoadingMessage() {
     document.getElementById('loadingMessage').style.display = 'none';
 }
 
-// Оновлена функція шифрування файлів із використанням loadingMessage
 async function encryptFile(event) {
     event.preventDefault(); // Зупиняємо стандартне відправлення форми
     showLoadingMessage(); // Показуємо повідомлення про завантаження
@@ -72,6 +71,7 @@ async function encryptFile(event) {
     const fileInput = document.getElementById("encryptFile");
     const file = fileInput.files[0];
     const messageElement = document.getElementById("encryptFileMessage");
+    const timeElement = document.getElementById("encryptionTime"); // Новий елемент для виведення часу шифрування
 
     if (!file) {
         console.error("File not provided.");
@@ -95,6 +95,13 @@ async function encryptFile(event) {
             messageElement.style.display = "block";
             messageElement.style.color = "green";
             messageElement.textContent = responseData.message;
+
+            // Виводимо час шифрування
+            if (responseData.rc5_enc_time) {
+                timeElement.style.display = "block"; // Показуємо блок з часом
+                timeElement.style.color = "green";
+                timeElement.textContent = responseData.rc5_enc_time; // Виводимо час
+            }
         } else {
             messageElement.style.display = "block";
             messageElement.style.color = "red";
@@ -112,7 +119,7 @@ async function encryptFile(event) {
     return false;
 }
 
-// Оновлена функція дешифрування файлів із використанням loadingMessage
+
 async function decryptFile(event) {
     event.preventDefault();  // Зупиняємо стандартне відправлення форми
     showLoadingMessage(); // Показуємо повідомлення про завантаження
@@ -121,6 +128,7 @@ async function decryptFile(event) {
     const passwordInput = document.getElementById('decryptFilePassword');
     const messageElement = document.getElementById("decryptError");
     const successElement = document.getElementById("decryptFileSuccess");
+    const timeElement = document.getElementById("decryptionTime"); // Новий елемент для виведення часу дешифрування
 
     const file = fileInput.files[0];
     const password = passwordInput.value;
@@ -146,6 +154,13 @@ async function decryptFile(event) {
             successElement.style.display = 'block';
             successElement.textContent = data.message;
             messageElement.style.display = 'none'; // Приховуємо помилку, якщо вона була
+
+            // Виводимо час дешифрування
+            if (data.rc5_dec_time) {
+                timeElement.style.display = 'block'; // Показуємо блок з часом
+                timeElement.style.color = 'green';
+                timeElement.textContent = data.rc5_dec_time; // Виводимо час
+            }
         } else {
             successElement.style.display = 'none';
             messageElement.style.display = 'block';
@@ -270,59 +285,3 @@ async function decryptStringRSA() {
         resultDiv.style.color = "red";
     }
 }
-
-
-async function RSAFileEncryption(event) {
-    event.preventDefault();
-
-    const form = event.target; // Отримуємо форму
-    const formData = new FormData(form); // Формуємо дані форми
-
-    try {
-        // Надсилаємо POST-запит на сервер
-        const response = await fetch('/lab4/rsa_file', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (response.ok) {
-            // Якщо успіх, завантажуємо оновлену HTML-сторінку
-            const html = await response.text();
-            document.documentElement.innerHTML = html; // Оновлюємо весь HTML
-        } else {
-            alert("Помилка шифрування. Спробуйте ще раз.");
-        }
-    } catch (error) {
-        console.error("Помилка під час запиту:", error);
-        alert("Сталася помилка під час запиту до сервера.");
-    }
-}
-
-
-
-async function RSAFileDecryption(event) {
-    event.preventDefault();
-
-    const form = event.target; // Отримуємо форму
-    const formData = new FormData(form); // Формуємо дані форми
-
-    try {
-        // Надсилаємо POST-запит на сервер
-        const response = await fetch('/lab4/decrypt_file', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (response.ok) {
-            // Якщо успіх, завантажуємо оновлену HTML-сторінку
-            const html = await response.text();
-            document.documentElement.innerHTML = html; // Оновлюємо весь HTML
-        } else {
-            alert("Помилка дешифрування. Спробуйте ще раз.");
-        }
-    } catch (error) {
-        console.error("Помилка під час запиту:", error);
-        alert("Сталася помилка під час запиту до сервера.");
-    }
-}
-
