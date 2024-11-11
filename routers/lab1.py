@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import APIRouter, Form, Request, HTTPException
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import configparser
 import multiprocessing
@@ -98,6 +98,7 @@ class LinearCongruentialGenerator:
         except IOError as e:
             print(f"Error saving results: {e}")
 
+
 def cesaro_test_part(args):
     sequence_part, sample_size, use_sampling = args
     coprime_count = 0
@@ -130,6 +131,9 @@ async def read_lab(request: Request):
 
 @router.post("/lab1", response_class=HTMLResponse)
 async def lab1(request: Request, inputLab1: int = Form(...)):
+    if not isinstance(inputLab1, int) or inputLab1 <= 0:
+        raise HTTPException(status_code=422, detail="Input must be a positive integer.")
+
     config = configparser.ConfigParser()
     config.read("config.ini")
     m = int(config["LCG"]["m"])
@@ -175,19 +179,20 @@ async def lab1(request: Request, inputLab1: int = Form(...)):
         num_cores = multiprocessing.cpu_count()
         print(f"Кількість процесорних ядер: {num_cores}")
 
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "outputLab1": sequence_result,
-            "outputLab1_2": period,
+        return JSONResponse(content={
+            "pi_lcg_result": pi_lcg_result,
+            "pi_random_result": pi_random_result,
+            "known_pi": known_pi,
+            "sequence_result": sequence_result,
+            "period": period,
             "chesaro": estimated_pi_lcg,
-            "random_sequence": estimated_pi_random,
-            "pi": known_pi,
-            "show_lab1": True
+            "random_sequence": estimated_pi_random
         })
 
     except ValueError:
-        return templates.TemplateResponse("index.html", {"request": request,
-                                                         "outputLab1": "Помилка: n має бути цілим числом. Спробуйте ще раз."})
+        return JSONResponse(content={
+            "error": "Помилка: n має бути цілим числом. Спробуйте ще раз."
+        }, status_code=422)
 
 
 @router.get("/download_results", response_class=FileResponse)

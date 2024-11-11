@@ -120,7 +120,6 @@ async def decrypt_file(encrypted_file: UploadFile, private_key) -> str:
         raise RuntimeError(f"Помилка під час дешифрування файлу: {e}")
 
 
-
 @router.post("/lab4/generate_key", response_class=HTMLResponse)
 async def generate_key(request: Request):
     """Генерація RSA ключів."""

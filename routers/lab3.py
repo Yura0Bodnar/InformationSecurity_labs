@@ -125,8 +125,12 @@ class RC5CBCPad:
         with open(input_filename, 'rb') as infile:
             iv_ciphertext = infile.read()
 
-        iv = iv_ciphertext[:self.block_size]
-        ciphertext = iv_ciphertext[self.block_size:]
+        # Перевірка, чи достатньо байтів для IV і шифрованого тексту
+        if len(iv_ciphertext) < self.block_size:
+            raise ValueError("Insufficient data for IV and ciphertext.")
+
+        iv = iv_ciphertext[:self.block_size]  # Перші block_size байтів - це IV
+        ciphertext = iv_ciphertext[self.block_size:]  # Останні байти - це зашифровані дані
 
         decrypted_data = self.decrypt_file_mode(ciphertext, iv)
 

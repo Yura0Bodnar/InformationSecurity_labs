@@ -1,6 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, Form, Request
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 import struct
 import math
 import os
@@ -11,12 +10,9 @@ import hashlib
 
 router = APIRouter()
 
-templates = Jinja2Templates(directory="templates")
-
 
 def save_results_to_file(hash_result, filename: str):
     try:
-        # Відкриваємо файл на запис (створюється новий, якщо його не існує)
         with open(filename, "w") as file:
             file.write("Hash code:\n")
             file.write(hash_result + "\n\n")
@@ -81,102 +77,68 @@ class MD5:
 
 
 async def md5_file(file: UploadFile) -> str:
-    # Використовуємо hashlib для MD5
     md5 = hashlib.md5()
-
-    # Читаємо файл великими блоками (наприклад, 8 КБ)
     while chunk := await file.read(8192):
         md5.update(chunk)
-
     return md5.hexdigest()
 
 
-@router.post("/lab2/md5_string", response_class=HTMLResponse)
-async def hash_string(request: Request, input_string: str = Form(...)):
+@router.post("/lab2/md5_string", response_class=JSONResponse)
+async def hash_string(input_string: str = Form(...)):
     md5 = MD5()
     md5.update(input_string.encode())
     hash_result = md5.hexdigest()
 
-    # Використовуємо дефолтне ім'я файлу
-    filename = "result_md5.txt"
-
     # Зберігаємо результат у файл
-    save_results_to_file(hash_result, filename)
+    save_results_to_file(hash_result, "result_md5.txt")
 
-    # Показуємо результат і можливість завантаження
-    return templates.TemplateResponse("index.html",
-                                      {"request": request,
-                                       "string_result": hash_result,
-                                       "input_string": input_string,
-                                       "show_lab2": True})
+    return {"string_result": hash_result, "input_string": input_string}
 
 
-@router.get("/download_results_lab2", response_class=FileResponse)
+@router.get("/download_results_lab2", response_class=JSONResponse)
 async def download_results():
     filename = "result_md5.txt"
-    # Перевіряємо, чи існує файл
     if os.path.exists(filename):
-        # Повертаємо файл для завантаження
-        return FileResponse(path=filename, media_type='application/octet-stream', filename=filename)
+        with open(filename, "r") as file:
+            content = file.read()
+        return {"status": "success", "content": content}
     return {"status": "error", "message": "Файл не знайдено."}
 
 
-@router.post("/lab2/process_file", response_class=HTMLResponse)
-async def process_file(request: Request, file: UploadFile = File(...)):
-    filename = file.filename
-    file_extension = filename.split(".")[-1].lower()
-
-    # Хешуємо файл
+@router.post("/lab2/process_file", response_class=JSONResponse)
+async def process_file(file: UploadFile = File(...)):
     file_hash = await md5_file(file)
 
     # Переміщуємо вказівник файлу на початок після хешування
     file.file.seek(0)
 
-    # Зчитуємо файл залежно від його розширення
-    if file_extension == "txt":
-        file_content = await read_txt(file)
-    elif file_extension == "pdf":
-        file_content = await read_pdf(file)
-    elif file_extension == "csv":
-        file_content = await read_csv(file)
-    elif file_extension == "json":
-        file_content = await read_json(file)
-    else:
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "error": "Unsupported file format. Please upload .txt, .pdf, .csv, or .json file."
-        })
+    # Аналізуємо вміст файлу
+    try:
+        if file.filename.endswith(".txt"):
+            content = await read_txt(file)
+        elif file.filename.endswith(".pdf"):
+            content = await read_pdf(file)
+        elif file.filename.endswith(".csv"):
+            content = await read_csv(file)
+        elif file.filename.endswith(".json"):
+            content = await read_json(file)
+        else:
+            return {"status": "error", "message": "Unsupported file format"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
-    # Повертаємо вміст файлу та його хеш для відображення
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "file_content": file_content,
-        "file_hash": file_hash,
-        "filename": filename,
-        "show_lab2": True
-    })
+    return {"file_hash": file_hash, "content": content, "filename": file.filename}
 
 
 async def verify_file_integrity(computed_hash: str, hash_file: UploadFile) -> bool:
-    # Отримуємо хеш із завантаженого файлу з хешем
     original_hash = await hash_file.read()
-    # Порівнюємо обчислений хеш із хешем у файлі
     return computed_hash == original_hash.decode().strip()
 
 
-@router.post("/lab2/verify_file", response_class=HTMLResponse)
-async def verify_file(request: Request, file_hash: str = Form(...), hash_file: UploadFile = File(...)):
-    # Перевіряємо цілісність файлу
+@router.post("/lab2/verify_file", response_class=JSONResponse)
+async def verify_file(file_hash: str = Form(...), hash_file: UploadFile = File(...)):
     is_intact = await verify_file_integrity(file_hash, hash_file)
-
-    # Повертаємо результат перевірки у шаблон з відповідним повідомленням
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "is_intact": is_intact,
-        "check_performed": True,  # Додаємо змінну, яка вказує, що перевірка була виконана
-        "file_hash": file_hash,
-        "show_lab2": True
-    })
+    return {"file_hash": file_hash, "is_intact": is_intact}
 
 
 async def read_txt(file: UploadFile) -> str:
@@ -193,51 +155,11 @@ async def read_pdf(file: UploadFile) -> str:
 
 
 async def read_csv(file: UploadFile) -> str:
-    # Використовуємо pandas для читання CSV, пропускаємо перший рядок
-    df = pd.read_csv(file.file, skiprows=1, header=None)  # Пропускаємо заголовок та не використовуємо його
-    # Витягуємо перше значення першого стовпця
-    value = df.iloc[0, 0]  # Отримуємо значення в першому рядку і першому стовпці
-    return str(value)
+    df = pd.read_csv(file.file, skiprows=1, header=None)
+    return str(df.iloc[0, 0])
 
 
 async def read_json(file: UploadFile) -> str:
     content = await file.read()
     json_data = json.loads(content.decode("utf-8"))
-    # Витягуємо значення для ключа "text"
-    value = json_data.get("text", "")
-    return str(value)
-
-
-from concurrent.futures import ThreadPoolExecutor
-import asyncio
-
-# Розмір блоку для читання
-CHUNK_SIZE = 8 * 1024 * 1024  # 8 МБ
-
-
-def hash_chunk(chunk):
-    # Створюємо локальний екземпляр MD5 і оновлюємо його для блоку
-    md5 = hashlib.md5()
-    md5.update(chunk)
-    return md5.digest()  # Повертаємо байти, щоб комбінувати їх пізніше
-
-
-async def md5_file_parallel(file: UploadFile) -> str:
-    # Використовуємо ThreadPoolExecutor для багатопоточного хешування
-    loop = asyncio.get_event_loop()
-    executor = ThreadPoolExecutor()
-
-    # Список для збереження хешів частин файлу
-    hash_parts = []
-
-    while chunk := await file.read(CHUNK_SIZE):
-        # Обчислюємо хеш для кожної частини паралельно
-        hash_part = await loop.run_in_executor(executor, hash_chunk, chunk)
-        hash_parts.append(hash_part)
-
-    # Створюємо фінальний хеш на основі всіх частин
-    final_md5 = hashlib.md5()
-    for part in hash_parts:
-        final_md5.update(part)
-
-    return final_md5.hexdigest()
+    return str(json_data.get("text", ""))
