@@ -105,6 +105,7 @@ html, body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);
+    word-wrap: break-word; /* Дозволяє переносити текст на новий рядок */
     position: relative; /* Відносна позиція всередині контейнера */
     z-index: 1;
 }

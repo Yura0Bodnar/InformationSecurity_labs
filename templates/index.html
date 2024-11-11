@@ -175,6 +175,88 @@
                 </div>
             </div>
         </div>
+
+        <!-- Лабораторна робота 4 -->
+        <div class="content">
+        <div id="lab4" class="lab-content" style="display: {% if show_lab4 %}block{% else %}none{% endif %};">
+            <h2>Лабораторна робота 4: RSA шифрування</h2>
+
+            <form method="POST" action="/lab4/generate_key" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
+                <button type="submit">Генерувати ключі</button>
+                    {% if key_generation_result %}
+                    <div>
+                        <h4 style="color:green">{{ key_generation_result }}</h4>
+                    </div>
+                    {% endif %}
+            </form>
+
+            <!-- Хешування рядка -->
+                <h3>Хешування рядка:</h3>
+                <form method="POST" action="/lab4/rsa_string">
+                    <label for="inputText_rsa">Введіть рядок:</label>
+                    <input type="text" id="inputText_rsa" name="input_text_rsa" value="{{ input_text_rsa }}" required>
+
+                    <button type="submit">Отримати RSA</button>
+                </form>
+
+                    {% if string_result_rsa %}
+                        <div>
+                            <h4>RSA хеш рядка:</h4>
+                            <p>{{ string_result_rsa }}</p>
+                            <form method="GET" action="/lab4/download_results">
+                                <button type="submit">Завантажити результат</button>
+                            </form>
+                        </div>
+            <!-- Дешифрування -->
+                <h3>Дешифрування:</h3>
+                <form onsubmit="decryptStringRSA(); return false;">
+                    <label for="encryptedText">Введіть шифротекст:</label>
+                    <input type="text" id="encryptedText" required>
+                    <button type="submit">Дешифрувати</button>
+                </form>
+                <div id="decryptResult"></div>
+
+                {% if decrypted_result %}
+                <div>
+                    <h4>Розшифрований текст:</h4>
+                    <p>{{ decrypted_result }}</p>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                <!-- Хешування файлу -->
+                <h3>Шифрування файлу:</h3>
+                    <form onsubmit="RSAFileEncryption(event)">
+                        <label for="inputFileRSA">Виберіть файл:</label>
+                        <input type="file" id="inputFileRSA" name="encrypt_fileRSA" required>
+                        <button type="submit">Зашифрувати</button>
+                    </form>
+
+                    <div>
+                        <h4 style="color: {{ 'green' if file_hash_rsa else 'red' }}">
+                            {{ file_hash_rsa if file_hash_rsa else error_message }}
+                        </h4>
+                    </div>
+
+                    <h3>Дешифрування файлу:</h3>
+                        <form onsubmit="RSAFileDecryption(event); return false;">
+                            <label for="decryptFileRSA">Виберіть файл:</label>
+                            <input type="file" id="decryptFileRSA" name="decrypt_fileRSA" required>
+                            <button type="submit">Дешифрувати</button>
+                        </form>
+
+                        {% if decrypted_file_path %}
+                        <div>
+                            <h4>Розшифрований файл:</h4>
+                            <form method="GET" action="/lab4/download_decrypted_file">
+                                <input type="hidden" name="file_path" value="{{ decrypted_file_path }}">
+                                <button type="submit">Завантажити розшифрований файл</button>
+                            </form>
+                        </div>
+                        {% endif %}
+
+            </div>
+        </div>
     </div>
     <script src="../static/script.js"></script>
 </body>

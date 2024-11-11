@@ -19,7 +19,6 @@ function downloadResults() {
     window.location.href = '/download_results'; // Завантаження файлу
 }
 
-let encryptionPassword;
 
 async function submitPasswordForm(event) {
     event.preventDefault(); // Prevent the default form submission
@@ -241,3 +240,89 @@ async function decryptTextForm(event) {
 
 document.getElementById("encryptTextForm").addEventListener("submit", encryptTextForm);
 document.getElementById("decryptTextForm").addEventListener("submit", decryptTextForm);
+
+
+async function decryptStringRSA() {
+    const encryptedText = document.getElementById("encryptedText").value;
+    const resultDiv = document.getElementById("decryptResult");
+
+    try {
+        const response = await fetch('/lab4/decrypt_string', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ encrypted_text: encryptedText }),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            resultDiv.innerHTML = `<h4>Розшифрований текст:</h4><p>${result.decrypted_result}</p>`;
+            resultDiv.style.color = "green";
+        } else {
+            resultDiv.innerHTML = `<h4>Помилка:</h4><p>${result.message}</p>`;
+            resultDiv.style.color = "red";
+        }
+    } catch (error) {
+        console.error("Помилка запиту:", error);
+        resultDiv.innerHTML = `<h4>Помилка:</h4><p>Сталася помилка під час запиту до сервера.</p>`;
+        resultDiv.style.color = "red";
+    }
+}
+
+
+async function RSAFileEncryption(event) {
+    event.preventDefault();
+
+    const form = event.target; // Отримуємо форму
+    const formData = new FormData(form); // Формуємо дані форми
+
+    try {
+        // Надсилаємо POST-запит на сервер
+        const response = await fetch('/lab4/rsa_file', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            // Якщо успіх, завантажуємо оновлену HTML-сторінку
+            const html = await response.text();
+            document.documentElement.innerHTML = html; // Оновлюємо весь HTML
+        } else {
+            alert("Помилка шифрування. Спробуйте ще раз.");
+        }
+    } catch (error) {
+        console.error("Помилка під час запиту:", error);
+        alert("Сталася помилка під час запиту до сервера.");
+    }
+}
+
+
+
+async function RSAFileDecryption(event) {
+    event.preventDefault();
+
+    const form = event.target; // Отримуємо форму
+    const formData = new FormData(form); // Формуємо дані форми
+
+    try {
+        // Надсилаємо POST-запит на сервер
+        const response = await fetch('/lab4/decrypt_file', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            // Якщо успіх, завантажуємо оновлену HTML-сторінку
+            const html = await response.text();
+            document.documentElement.innerHTML = html; // Оновлюємо весь HTML
+        } else {
+            alert("Помилка дешифрування. Спробуйте ще раз.");
+        }
+    } catch (error) {
+        console.error("Помилка під час запиту:", error);
+        alert("Сталася помилка під час запиту до сервера.");
+    }
+}
+
