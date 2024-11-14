@@ -261,6 +261,99 @@
 
             </div>
         </div>
+
+        <!-- Лабораторна робота 5 -->
+        <div class="content">
+        <div id="lab5" class="lab-content" style="display: {% if show_lab5 %}block{% else %}none{% endif %};">
+            <h2>Лабораторна робота 5: DSA підпис</h2>
+
+            <form method="POST" action="/lab5/generate_keys" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
+                <button type="submit">Генерувати ключі</button>
+                    {% if key_generation_result %}
+                    <div>
+                        <h4 style="color:green">{{ key_generation_result }}</h4>
+                    </div>
+                    {% endif %}
+            </form>
+
+            <!-- Хешування рядка -->
+                <h3>Хешування рядка:</h3>
+                <form method="POST" action="/lab5/sign_data">
+                    <label for="inputText_dsa">Введіть рядок:</label>
+                    <input type="text" id="inputText_dsa" name="input_text_dsa" value="{{ input_text_dsa }}" required>
+
+                    <button type="submit">Отримати DSA</button>
+                </form>
+
+                    {% if string_result_dsa %}
+                        <div>
+                            <h4>DSA підпис:</h4>
+                            <p>{{ string_result_dsa }}</p>
+                            <form method="GET" action="/lab5/download_signature">
+                                <button type="submit">Завантажити результат</button>
+                            </form>
+                        </div>
+            <!-- Дешифрування -->
+                <h3>Перевірка підпису:</h3>
+                    <form id="verifySignatureForm">
+                        <label for="signature">Введіть підпис:</label>
+                        <input type="text" id="signature" name="signature" required>
+                        <button type="submit">Перевірити</button>
+                    </form>
+
+                    <div id="verificationResult"></div>
+                {% endif %}
+
+                <!-- Підпис файлу -->
+                <h3>Підпис файлу:</h3>
+                    <form method="POST" action="/lab5/sign_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
+                        <label for="inputFileDsa">Виберіть файл:</label>
+                        <input type="file" id="inputFileDsa" name="file" required>
+                        <button type="submit">Підписати</button>
+                    </form>
+
+                    <!-- Відображення результату підпису -->
+                    {% if file_sign_result %}
+                        <div>
+                            <h4 style="color: green;">{{ file_sign_result }}</h4>
+                        </div>
+                    {% endif %}
+
+                    <!-- Відображення повідомлення про помилку -->
+                    {% if error_message %}
+                        <div>
+                            <h4 style="color: red;">{{ error_message }}</h4>
+                        </div>
+                    {% endif %}
+
+            <!-- Перевірка підпису файлу -->
+                <h3>Перевірка підпису файлу:</h3>
+                <form method="POST" action="/lab5/verify_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
+
+                    <label for="signatureFile">Виберіть файл підпису:</label>
+                    <input type="file" id="signatureFile" name="signature_file" required>
+
+                    <button type="submit">Перевірити підпис</button>
+                </form>
+
+                <!-- Відображення результату перевірки -->
+                {% if file_verify_result %}
+                <div>
+                    <h3 style="color: {{ 'green' if file_verify_result == 'Підпис дійсний.' else 'red' }};">
+                        {{ file_verify_result }}
+                    </h3>
+                </div>
+                {% endif %}
+
+                <!-- Відображення повідомлення про помилку -->
+                {% if error_message %}
+                <div>
+                    <h3 style="color: red;">{{ error_message }}</h3>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
     </div>
     <script src="../static/script.js"></script>
 </body>

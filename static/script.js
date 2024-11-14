@@ -285,3 +285,44 @@ async function decryptStringRSA() {
         resultDiv.style.color = "red";
     }
 }
+
+
+document.getElementById("verifySignatureForm").addEventListener("submit", async (event) => {
+    event.preventDefault(); // Запобігає стандартній відправці форми
+
+    const signature = document.getElementById("signature").value; // Отримуємо значення підпису
+    const resultDiv = document.getElementById("verificationResult"); // Блок для результатів перевірки
+
+    try {
+        // Відправка запиту на сервер
+        const response = await fetch("/lab5/verify_signature", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ signature: signature }),
+        });
+
+        if (response.ok) {
+            const html = await response.text(); // Отримуємо HTML як текст
+
+            // Визначення кольору залежно від результату
+            if (html.includes("Підпис дійсний")) {
+                resultDiv.style.color = "green";
+            } else if (html.includes("Підпис недійсний")) {
+                resultDiv.style.color = "red";
+            } else {
+                resultDiv.style.color = "black"; // У разі непередбаченого результату
+            }
+
+            resultDiv.innerHTML = html; // Вставляємо отриманий HTML у блок результатів
+        } else {
+            resultDiv.innerHTML = `<h4>Помилка сервера: ${response.status}</h4>`;
+            resultDiv.style.color = "red";
+        }
+    } catch (error) {
+        console.error("Помилка запиту:", error);
+        resultDiv.innerHTML = `<h4>Помилка: Сталася помилка під час запиту до сервера.</h4>`;
+        resultDiv.style.color = "red";
+    }
+});
