@@ -53,308 +53,56 @@
         <div class="content">
             <div id="lab2" class="lab-content" style="display: {% if show_lab2 %}block{% else %}none{% endif %};">
                 <h2>Лабораторна робота 2: MD5 хешування</h2>
-
-                <!-- Хешування рядка -->
-                <h3>Хешування рядка:</h3>
-                <form method="POST" action="/lab2/md5_string">
-                    <label for="inputString">Введіть рядок:</label>
-                    <input type="text" id="inputString" name="input_string" value="{{ input_string }}" required>
-
-                    <button type="submit">Отримати MD5</button>
-                </form>
-
-                {% if string_result %}
-                <div>
-                    <h4>MD5 хеш рядка:</h4>
-                    <p>{{ string_result }}</p>
-                    <form method="GET" action="/download_results_lab2">
-                        <button type="submit">Завантажити результат</button>
-                    </form>
-                </div>
-                {% endif %}
-
-                <!-- Хешування файлу -->
-                <h3>Хешування файлу:</h3>
-                <form method="POST" action="/lab2/process_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                    <label for="fileHash">Виберіть файл:</label>
-                    <input type="file" id="fileHash" name="file" required>
-                    <button type="submit">Отримати MD5 хеш</button>
-                </form>
-<!--
-                {% if file_content %}
-                    <h3>Вміст файлу: {{ filename }}</h3>
-                    <div style="max-height: 300px; width: 100%; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
-                        <pre>{{ file_content }}</pre>
-                    </div>
-                {% endif %}
--->
-                {% if file_hash %}
-                <div>
-                    <h4>MD5 хеш файлу:</h4>
-                    <p>{{ file_hash }}</p>
-
-                    <!-- Форма для перевірки цілісності файлу -->
-                    <h3>Перевірка цілісності файлу:</h3>
-                    <form method="POST" action="/lab2/verify_file" enctype="multipart/form-data">
-                        <!-- Передаємо file_hash у приховане поле -->
-                        <input type="hidden" name="file_hash" value="{{ file_hash }}">
-                        <label for="hash_file">Виберіть файл із хешем:</label>
-                        <input type="file" id="hash_file" name="hash_file" required>
-                        <button type="submit">Перевірити</button>
-                    </form>
-                </div>
-                {% endif %}
-
-                <!-- Виведення результату перевірки -->
-                {% if check_performed %}
-                    <div>
-                        {% if is_intact %}
-                            <h4 style="color: green;">Файл цілісний.</h4>
-                        {% else %}
-                            <h4 style="color: red;">Файл пошкоджений.</h4>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <!-- Вміст для лабораторної роботи 2 -->
             </div>
         </div>
 
         <!-- Лабораторна робота 3 -->
         <div class="content">
-        <div id="lab3" class="lab-content">
-            <h2>Лабораторна робота 3: RC5 шифрування</h2>
-
-            <div id="passwordSection">
-            <h3>Введіть пароль для шифрування:</h3>
-            <form id="passwordForm" onsubmit="submitPasswordForm(event); return false;">
-                <label for="encryptionPassword">Пароль для шифрування:</label>
-                <input type="password" id="encryptionPassword" name="encryption_password" required>
-                <button type="submit">Підтвердити пароль</button>
-            </form>
-            <p id="passwordSaveMessage" style="display: none;"></p>
-            </div>
-
-            <div id="encryptionSection" style="display: none;">
-            <h3>1. Шифрування файлу</h3>
-            <form id="encryptFileForm" enctype="multipart/form-data">
-            <label for="encryptFile">Виберіть файл для шифрування:</label>
-            <input type="file" id="encryptFile" required><br>
-            <button type="submit">Шифрувати файл</button>
-            </form>
-
-            <p id="encryptFileMessage" style="display: none; color: red;"></p>
-            <!-- Додаємо елемент для відображення часу шифрування -->
-            <div id="encryptionTime" style="display:none;"></div>
-
-                <!--Етап 2: Дешифрування файлу-->
-                <h3>2. Дешифрування файлу</h3>
-                <form id="decryptFileForm" enctype="multipart/form-data">
-                    <label for="decryptFile">Виберіть файл для дешифрування:</label>
-                    <input type="file" id="decryptFile" required><br>
-                    <label for="decryptFilePassword">Пароль для дешифрування:</label>
-                    <input type="password" id="decryptFilePassword" required><br>
-                    <button type="submit">Дешифрувати файл</button>
-                </form>
-                <p id="decryptFileSuccess" style="color: green; display: none;">Файл успішно дешифровано!</p>
-                <p id="decryptError" style="color: red; display: none;">Дешифрування не відбулося. Неправильний пароль.</p>
-                <div id="decryptionTime" style="display:none;"></div>
-                <h3>3. Шифрування тексту</h3>
-                <form id="encryptTextForm">
-                    <label for="encryptText">Введіть текст для шифрування:</label>
-                    <input type="text" id="encryptText" required><br>
-                    <button type="submit">Шифрувати текст</button>
-                </form>
-                <p id="encryptTextMessage" style="display: none; color: green;"></p>
-
-                <h3>4. Дешифрування шифротексту</h3>
-                <form id="decryptTextForm">
-                    <label for="decryptText">Введіть шифротекст для дешифрування:</label>
-                    <input type="text" id="decryptText" required><br>
-                    <label for="decryptTextPassword">Пароль для дешифрування:</label>
-                    <input type="password" id="decryptTextPassword" required><br>
-                    <button type="submit">Дешифрувати текст</button>
-                </form>
-                    <p id="decryptTextMessage" style="display: none; color: red;"></p>
-                </div>
+            <div id="lab3" class="lab-content" style="display: {% if show_lab3 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 3: RC5 шифрування</h2>
+                <!-- Вміст для лабораторної роботи 3 -->
             </div>
         </div>
 
         <!-- Лабораторна робота 4 -->
         <div class="content">
-        <div id="lab4" class="lab-content" style="display: {% if show_lab4 %}block{% else %}none{% endif %};">
-            <h2>Лабораторна робота 4: RSA шифрування</h2>
-
-            <form method="POST" action="/lab4/generate_key" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                <button type="submit">Генерувати ключі</button>
-                    {% if key_generation_result %}
-                    <div>
-                        <h4 style="color:green">{{ key_generation_result }}</h4>
-                    </div>
-                    {% endif %}
-            </form>
-
-            <!-- Хешування рядка -->
-                <h3>Хешування рядка:</h3>
-                <form method="POST" action="/lab4/rsa_string">
-                    <label for="inputText_rsa">Введіть рядок:</label>
-                    <input type="text" id="inputText_rsa" name="input_text_rsa" value="{{ input_text_rsa }}" required>
-
-                    <button type="submit">Отримати RSA</button>
-                </form>
-
-                    {% if string_result_rsa %}
-                        <div>
-                            <h4>RSA хеш рядка:</h4>
-                            <p>{{ string_result_rsa }}</p>
-                            <form method="GET" action="/lab4/download_results">
-                                <button type="submit">Завантажити результат</button>
-                            </form>
-                        </div>
-            <!-- Дешифрування -->
-                <h3>Дешифрування:</h3>
-                <form onsubmit="decryptStringRSA(); return false;">
-                    <label for="encryptedText">Введіть шифротекст:</label>
-                    <input type="text" id="encryptedText" required>
-                    <button type="submit">Дешифрувати</button>
-                </form>
-                <div id="decryptResult"></div>
-
-                {% if decrypted_result %}
-                <div>
-                    <h4>Розшифрований текст:</h4>
-                    <p>{{ decrypted_result }}</p>
-                </div>
-                {% endif %}
-                {% endif %}
-
-                <!-- Хешування файлу -->
-                <h3>Шифрування файлу:</h3>
-                    <form method="POST" action="/lab4/rsa_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                        <label for="inputFileRSA">Виберіть файл:</label>
-                        <input type="file" id="inputFileRSA" name="encrypt_fileRSA" required>
-                        <button type="submit">Зашифрувати</button>
-                    </form>
-
-                    {% if file_hash_rsa%}
-                        <div>
-                            <h3 style="color: green;">{{ file_hash_rsa }}</h3>
-                            <h4>{{ rsa_enc_time }}</h4>
-                        </div>
-                        {% endif %}
-
-                    <h3>Дешифрування файлу:</h3>
-                        <form method="POST" action="/lab4/decrypt_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                            <label for="decryptFileRSA">Виберіть файл:</label>
-                            <input type="file" id="decryptFileRSA" name="decrypt_fileRSA" required>
-                            <button type="submit">Дешифрувати</button>
-                        </form>
-
-                        {% if decrypted_file_path %}
-                        <div>
-                            <h3>Розшифрований файл:</h3>
-                            <h4>{{ decryption_time }}</h4>
-                            <form method="GET" action="/lab4/download_decrypted_file">
-                                <input type="hidden" name="file_path" value="{{ decrypted_file_path }}">
-                                <button type="submit">Завантажити розшифрований файл</button>
-                            </form>
-                        </div>
-                        {% endif %}
-
+            <div id="lab4" class="lab-content" style="display: {% if show_lab4 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 4: RSA шифрування</h2>
+                <!-- Вміст для лабораторної роботи 4 -->
             </div>
         </div>
 
         <!-- Лабораторна робота 5 -->
         <div class="content">
-        <div id="lab5" class="lab-content" style="display: {% if show_lab5 %}block{% else %}none{% endif %};">
-            <h2>Лабораторна робота 5: DSA підпис</h2>
-
-            <form method="POST" action="/lab5/generate_keys" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                <button type="submit">Генерувати ключі</button>
-                    {% if key_generation_result %}
-                    <div>
-                        <h4 style="color:green">{{ key_generation_result }}</h4>
-                    </div>
-                    {% endif %}
-            </form>
-
-            <!-- Хешування рядка -->
-                <h3>Підпис рядка:</h3>
-                <form method="POST" action="/lab5/sign_data">
-                    <label for="inputText_dsa">Введіть рядок:</label>
-                    <input type="text" id="inputText_dsa" name="input_text_dsa" value="{{ input_text_dsa }}" required>
-
-                    <button type="submit">Отримати DSA</button>
-                </form>
-
-                    {% if string_result_dsa %}
-                        <div>
-                            <h4>DSA підпис:</h4>
-                            <p>{{ string_result_dsa }}</p>
-                            <form method="GET" action="/lab5/download_signature">
-                                <button type="submit">Завантажити результат</button>
-                            </form>
-                        </div>
-            <!-- Дешифрування -->
-                <h3>Перевірка підпису:</h3>
-                    <form id="verifySignatureForm">
-                        <label for="signature">Введіть підпис:</label>
-                        <input type="text" id="signature" name="signature" required>
-                        <button type="submit">Перевірити</button>
-                    </form>
-
-                    <div id="verificationResult"></div>
-                {% endif %}
-
-                <!-- Підпис файлу -->
-                <h3>Підпис файлу:</h3>
-                    <form method="POST" action="/lab5/sign_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-                        <label for="inputFileDsa">Виберіть файл:</label>
-                        <input type="file" id="inputFileDsa" name="file" required>
-                        <button type="submit">Підписати</button>
-                    </form>
-
-                    <!-- Відображення результату підпису -->
-                    {% if file_sign_result %}
-                        <div>
-                            <h4 style="color: green;">{{ file_sign_result }}</h4>
-                        </div>
-                    {% endif %}
-
-                    <!-- Відображення повідомлення про помилку -->
-                    {% if error_message %}
-                        <div>
-                            <h4 style="color: red;">{{ error_message }}</h4>
-                        </div>
-                    {% endif %}
-
-            <!-- Перевірка підпису файлу -->
-                <h3>Перевірка підпису файлу:</h3>
-                <form method="POST" action="/lab5/verify_file" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
-
-                    <label for="signatureFile">Виберіть файл підпису:</label>
-                    <input type="file" id="signatureFile" name="signature_file" required>
-
-                    <button type="submit">Перевірити підпис</button>
-                </form>
-
-                <!-- Відображення результату перевірки -->
-                {% if file_verify_result %}
-                <div>
-                    <h3 style="color: {{ 'green' if file_verify_result == 'Підпис дійсний.' else 'red' }};">
-                        {{ file_verify_result }}
-                    </h3>
-                </div>
-                {% endif %}
-
-                <!-- Відображення повідомлення про помилку -->
-                {% if error_message %}
-                <div>
-                    <h3 style="color: red;">{{ error_message }}</h3>
-                </div>
-                {% endif %}
-
+            <div id="lab5" class="lab-content" style="display: {% if show_lab5 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 5: DSA підпис</h2>
+                <!-- Вміст для лабораторної роботи 5 -->
             </div>
         </div>
     </div>
     <script src="../static/script.js"></script>
+    <script>
+        function loadActiveLab() {
+            const activeLab = localStorage.getItem('activeLab');
+            if (activeLab) {
+                showLab(activeLab);
+            }
+        }
+
+        function showLab(labId) {
+            const labs = document.querySelectorAll('.lab-content');
+            labs.forEach(lab => lab.style.display = "none");
+
+            const selectedLab = document.getElementById(labId);
+            if (selectedLab) {
+                selectedLab.style.display = "block";
+            }
+
+            localStorage.setItem('activeLab', labId);
+        }
+
+        window.onload = loadActiveLab;
+    </script>
 </body>
 </html>
