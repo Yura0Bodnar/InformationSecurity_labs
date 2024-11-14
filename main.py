@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from routers import lab1, lab2, lab3, lab4, lab5
 import configparser
 import math
 import random
@@ -9,11 +10,19 @@ from concurrent.futures import ProcessPoolExecutor
 
 app = FastAPI()
 
+# Підключення шаблонів та статичних файлів
 templates = Jinja2Templates(directory="templates")
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Підключення роутерів
+app.include_router(lab1.router)
+app.include_router(lab2.router)
+app.include_router(lab3.router)
+app.include_router(lab4.router)
+app.include_router(lab5.router)
 
+
+# Лінійний конгруентний генератор
 def linear_congruential_generator(m, a, c, x0, n):
     sequence = []
     x = x0
@@ -23,12 +32,14 @@ def linear_congruential_generator(m, a, c, x0, n):
     return sequence
 
 
+# Пошук найбільшого спільного дільника
 def gcd(a, b):
     while b != 0:
         a, b = b, a % b
     return a
 
 
+# Частина тесту Чезаро
 def cesaro_test_part(sequence_part):
     coprime_count = 0
     total_pairs = 0
@@ -40,6 +51,7 @@ def cesaro_test_part(sequence_part):
     return coprime_count, total_pairs
 
 
+# Паралельний тест Чезаро
 def cesaro_test_parallel(sequence, num_workers=4):
     chunk_size = len(sequence) // num_workers
     chunks = [sequence[i:i + chunk_size] for i in range(0, len(sequence), chunk_size)]
@@ -60,6 +72,7 @@ def cesaro_test_parallel(sequence, num_workers=4):
     return estimated_pi
 
 
+# Пошук періоду послідовності
 def find_period(sequence):
     seen = {}
     for index, number in enumerate(sequence):
@@ -69,6 +82,7 @@ def find_period(sequence):
     return len(sequence)
 
 
+# Збереження результатів у файл
 def save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known_pi, filename="results.txt"):
     try:
         with open(filename, "w") as file:
@@ -83,16 +97,17 @@ def save_results_to_file(sequence_result, pi_lcg_result, pi_random_result, known
 
 @app.get("/", response_class=HTMLResponse)
 async def read_lab(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-
-@app.get("/", response_class=HTMLResponse)
-async def read_lab(request: Request):
+    """
+    Головна сторінка.
+    """
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.post("/lab1", response_class=HTMLResponse)
 async def lab1(request: Request, inputLab1: int = Form(...)):
+    """
+    Лабораторна робота 1: Лінійний конгруентний генератор.
+    """
     config = configparser.ConfigParser()
     config.read("config.ini")
     m = int(config["LCG"]["m"])

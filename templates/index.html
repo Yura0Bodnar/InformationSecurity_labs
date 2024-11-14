@@ -8,17 +8,23 @@
 </head>
 <body>
     <div class="background">
+        <!-- Повідомлення "Зачекайте будь ласка" -->
+        <div id="loadingMessage" style="display: none; color: red;">
+            Зачекайте будь ласка...
+        </div>
         <div class="top-menu">
             <ul>
-                <li><button onclick="showLab('lab1')">Лабораторна робота 1</button></li>
-                <li><button onclick="showLab('lab2')">Лабораторна робота 2</button></li>
-                <li><button onclick="showLab('lab3')">Лабораторна робота 3</button></li>
-                <li><button onclick="showLab('lab4')">Лабораторна робота 4</button></li>
-                <li><button onclick="showLab('lab5')">Лабораторна робота 5</button></li>
+                <li><button onclick="loadActiveLab('lab1')">Лабораторна робота 1</button></li>
+                <li><button onclick="loadActiveLab('lab2')">Лабораторна робота 2</button></li>
+                <li><button onclick="loadActiveLab('lab3')">Лабораторна робота 3</button></li>
+                <li><button onclick="loadActiveLab('lab4')">Лабораторна робота 4</button></li>
+                <li><button onclick="loadActiveLab('lab5')">Лабораторна робота 5</button></li>
             </ul>
         </div>
+
+        <!-- Лабораторна робота 1 -->
         <div class="content">
-            <div id="lab1" class="lab-content {% if active_lab == 'lab1' %}active{% endif %}">
+            <div id="lab1" class="lab-content" style="display: {% if show_lab1 %}block{% else %}none{% endif %};">
                 <h2>Лабораторна робота 1</h2>
                 <h3>Завдання 1:</h3>
                 <p>Варіант 4 (параметри є в конфігураційному файлі)</p>
@@ -27,11 +33,12 @@
                     <input type="number" id="inputLab1" name="inputLab1" required>
                     <button type="submit">Відправити</button>
                 </form>
+                <button onclick="downloadResults()">Зберегти у файл</button>
                 <div>
-                    <h3>Період</h3>
-                    <p>{{ outputLab1_2 }}</p>
+                    <h3>Період:</h3>
+                    <p>{{ outputLab1_2 if outputLab1_2 else 'Період не знайдено' }}</p>
                     <h3>Результат:</h3>
-                    <p>{{ outputLab1 }}</p>
+                    <p>{{ outputLab1 if outputLab1 else 'Немає результату' }}</p>
                 </div>
                 <div>
                     <h3>Завдання 2: Оцінка числа π за допомогою теореми Чезаро</h3>
@@ -41,27 +48,61 @@
                 </div>
             </div>
         </div>
+
+        <!-- Лабораторна робота 2 -->
+        <div class="content">
+            <div id="lab2" class="lab-content" style="display: {% if show_lab2 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 2: MD5 хешування</h2>
+                <!-- Вміст для лабораторної роботи 2 -->
+            </div>
+        </div>
+
+        <!-- Лабораторна робота 3 -->
+        <div class="content">
+            <div id="lab3" class="lab-content" style="display: {% if show_lab3 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 3: RC5 шифрування</h2>
+                <!-- Вміст для лабораторної роботи 3 -->
+            </div>
+        </div>
+
+        <!-- Лабораторна робота 4 -->
+        <div class="content">
+            <div id="lab4" class="lab-content" style="display: {% if show_lab4 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 4: RSA шифрування</h2>
+                <!-- Вміст для лабораторної роботи 4 -->
+            </div>
+        </div>
+
+        <!-- Лабораторна робота 5 -->
+        <div class="content">
+            <div id="lab5" class="lab-content" style="display: {% if show_lab5 %}block{% else %}none{% endif %};">
+                <h2>Лабораторна робота 5: DSA підпис</h2>
+                <!-- Вміст для лабораторної роботи 5 -->
+            </div>
+        </div>
     </div>
-
-<script>
-    function loadActiveLab() {
-        const activeLab = localStorage.getItem('activeLab');
-        if (activeLab) {
-            showLab(activeLab);
+    <script src="../static/script.js"></script>
+    <script>
+        function loadActiveLab() {
+            const activeLab = localStorage.getItem('activeLab');
+            if (activeLab) {
+                showLab(activeLab);
+            }
         }
-    }
 
-    function showLab(labId) {
-        const labs = document.querySelectorAll('.lab-content');
-        labs.forEach(lab => lab.classList.remove('active'));
+        function showLab(labId) {
+            const labs = document.querySelectorAll('.lab-content');
+            labs.forEach(lab => lab.style.display = "none");
 
-        const selectedLab = document.getElementById(labId);
-        selectedLab.classList.add('active');
+            const selectedLab = document.getElementById(labId);
+            if (selectedLab) {
+                selectedLab.style.display = "block";
+            }
 
-        localStorage.setItem('activeLab', labId);
-    }
+            localStorage.setItem('activeLab', labId);
+        }
 
-    window.onload = loadActiveLab;
-</script>
+        window.onload = loadActiveLab;
+    </script>
 </body>
 </html>

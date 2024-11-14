@@ -1,31 +1,35 @@
-body {
+html, body {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 .background {
     position: relative;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px; /* Якщо потрібен відступ для контенту */
+}
+
+.background::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
     background-image: url('images/images.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    font-family: Arial, sans-serif;
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    z-index: -1;
+    opacity: 0.9; /* Можна налаштувати прозорість, якщо потрібно */
 }
 
-.content {
-    flex-grow: 1;
-    padding: 80px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px);
-}
 
+/* Верхнє меню */
 .top-menu {
     width: 100%;
     background-color: #333;
@@ -36,6 +40,7 @@ body {
     z-index: 10;
 }
 
+/* Стилі для меню */
 .top-menu ul {
     list-style-type: none;
     margin: 0;
@@ -61,15 +66,51 @@ body {
     background-color: #cc5505;
 }
 
+/* Додатковий стиль для маленьких екранів */
+@media screen and (max-width: 768px) {
+    .lab-content {
+        width: 90%; /* Зменшуємо ширину на маленьких екранах */
+    }
+}
+
+/* Повідомлення про завантаження */
+#loadingMessage {
+    display: none; /* Спочатку приховуємо повідомлення */
+    position: fixed; /* Відображаємо зверху всього контенту */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Центруємо повідомлення */
+    background-color: rgba(0, 0, 0, 0.8); /* Напівпрозорий фон */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 100; /* Вищий пріоритет для перекриття інших елементів */
+    font-size: 18px;
+    text-align: center;
+}
+
+/* Стиль для контейнера контенту */
+.content {
+    padding: 80px 20px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Стиль для блоків лабораторних робіт */
 .lab-content {
-    display: none;
+    display: none; /* Спочатку приховуємо всі лабораторні роботи */
     width: 500px;
     background-color: #333;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);
+    word-wrap: break-word; /* Дозволяє переносити текст на новий рядок */
+    position: relative; /* Відносна позиція всередині контейнера */
+    z-index: 1;
 }
 
-.lab-content.active {
-    display: block;
+/* Після натискання кнопки щоб поле з лабораторною залишалось */
+.hidden {
+    display: none;
 }
